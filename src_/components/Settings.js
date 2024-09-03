@@ -39,7 +39,7 @@ const Settings = () => {
 
     return(
         <React.Fragment>
-            <h2>React Settings Form</h2>
+            <h2>React Settings Form options ( Table Wordpress)</h2>
             <form id="work-settings-form" onSubmit={ (e) => handleSubmit(e) }>
                 <table className="form-table" role="presentation">
                     <tbody>

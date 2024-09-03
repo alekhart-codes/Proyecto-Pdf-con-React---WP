@@ -1,6 +1,8 @@
 {
-    "presets": [
-      [ "env", {
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
         "modules": false,
         "targets": {
           "browsers": [
@@ -13,11 +15,15 @@
             "ie 11"
           ]
         }
-      } ]
-    ],
-    "plugins": [
-      [ "transform-react-jsx", {
-        "pragma": "wp.element.createElement"
-      } ]
+      }
     ]
-  }
+  ],
+  "plugins": [
+    [
+      "babel-plugin-transform-react-jsx",
+      {
+        "pragma": "wp.element.createElement"
+      }
+    ]
+  ]
+}
