@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: WP React KickOff
+ * Plugin Name: Cotizaciones PDF
  * Author: Victor Molina
  * Author URI: https://github.com/VitokoMp
  * Version: 1.0.1
