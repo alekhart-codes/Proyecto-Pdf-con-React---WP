@@ -20,6 +20,8 @@ module.exports = {
       }
     ]
   },
-  mode: 'development'
+  resolve: {
+    extensions: ['.js', '.jsx']
+  },
+  mode: process.env.NODE_ENV === 'production' ? 'production' : 'development'
 };
-    
