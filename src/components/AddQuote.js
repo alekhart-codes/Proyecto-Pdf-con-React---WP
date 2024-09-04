@@ -1,102 +1,130 @@
-import React, { useState } from 'react';
+ // src/components/AddQuote.js
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import PDFPreview from './PDFPreview';
 
 const AddQuote = () => {
-    const [clientName, setClientName] = useState('');
-    const [quoteTotal, setQuoteTotal] = useState('');
-    const [quoteItems, setQuoteItems] = useState('');
-    const [loader, setLoader] = useState('Add Quote');
+    const [cotizaciones, setCotizaciones] = useState([]);
+    const [showForm, setShowForm] = useState(false);
+    const [formData, setFormData] = useState({
+        client_name: '',
+        quote_total: '',
+        quote_items: ''
+    });
+    const [pdfUrl, setPdfUrl] = useState(null);
 
-    const url = `${appLocalizer.apiUrl}/wprk/v1/add-quote`;
+    useEffect(() => {
+        // Cargar cotizaciones existentes
+        axios.get('/wp-json/wprk/v1/quotes')
+            .then(response => setCotizaciones(response.data))
+            .catch(error => console.error('Error loading cotizaciones', error));
+    }, []);
+
+    const handleFormChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        setLoader('Adding...');
+        // Envía el formulario y actualiza la lista de cotizaciones
+        axios.post('/wp-json/wprk/v1/add-quote', formData)
+            .then(response => {
+                if (response.data.status === 'success') {
+                    setCotizaciones([...cotizaciones, { ...formData, id: response.data.quote_id }]);
+                    setFormData({ client_name: '', quote_total: '', quote_items: '' });
+                    setShowForm(false);
+                } else {
+                    console.error('Error saving cotizacion', response.data.message);
+                }
+            })
+            .catch(error => console.error('Error saving cotizacion', error));
+    };
 
-        axios.post(url, {
-            client_name: clientName,
-            quote_total: quoteTotal,
-            quote_items: quoteItems
-        }, {
-            headers: {
-                'Content-Type': 'application/json',
-                'X-WP-Nonce': appLocalizer.nonce
-            }
-        })
-        .then((res) => {
-            if (res.data.status === 'success') {
-                alert(`Quote added with ID: ${res.data.quote_id}`);
-                setClientName('');
-                setQuoteTotal('');
-                setQuoteItems('');
-            } else {
-                alert('Failed to add quote');
-            }
-            setLoader('Add Quote');
-        })
-        .catch((error) => {
-            console.error('Error adding quote:', error);
-            setLoader('Add Quote');
-        });
+    const handleGeneratePdf = (cotizacionId) => {
+        axios.get(`/wp-json/wprk/v1/quotes/${cotizacionId}/pdf`)
+            .then(response => setPdfUrl(response.data.pdfUrl))
+            .catch(error => console.error('Error generating PDF', error));
     };
 
     return (
         <React.Fragment>
-            <h2>Add New Quote</h2>
-            <form id="add-quote-form" onSubmit={handleSubmit}>
-                <table className="form-table" role="presentation">
+            <div>
+                <h2>Cotizaciones</h2>
+                {showForm ? (
+                    <form onSubmit={handleSubmit}>
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <th><label htmlFor="client_name">Cliente</label></th>
+                                    <td>
+                                        <input
+                                            id="client_name"
+                                            name="client_name"
+                                            value={formData.client_name}
+                                            onChange={handleFormChange}
+                                        />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th><label htmlFor="quote_total">Monto</label></th>
+                                    <td>
+                                        <input
+                                            id="quote_total"
+                                            name="quote_total"
+                                            type="number"
+                                            value={formData.quote_total}
+                                            onChange={handleFormChange}
+                                        />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th><label htmlFor="quote_items">Items</label></th>
+                                    <td>
+                                        <input
+                                            id="quote_items"
+                                            name="quote_items"
+                                            value={formData.quote_items}
+                                            onChange={handleFormChange}
+                                        />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button type="submit">Guardar</button>
+                        <button type="button" onClick={() => setShowForm(false)}>Cancelar</button>
+                    </form>
+                ) : (
+                    <button onClick={() => setShowForm(true)}>Agregar Nueva Cotización</button>
+                )}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Monto</th>
+                            <th>Items</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
                     <tbody>
-                        <tr>
-                            <th scope="row">
-                                <label htmlFor="clientName">Client Name</label>
-                            </th>
-                            <td>
-                                <input 
-                                    id="clientName" 
-                                    name="clientName" 
-                                    value={clientName} 
-                                    onChange={(e) => setClientName(e.target.value)} 
-                                    className="regular-text" 
-                                />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">
-                                <label htmlFor="quoteTotal">Quote Total</label>
-                            </th>
-                            <td>
-                                <input 
-                                    id="quoteTotal" 
-                                    name="quoteTotal" 
-                                    value={quoteTotal} 
-                                    onChange={(e) => setQuoteTotal(e.target.value)} 
-                                    className="regular-text" 
-                                    type="number"
-                                />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">
-                                <label htmlFor="quoteItems">Quote Items</label>
-                            </th>
-                            <td>
-                                <textarea 
-                                    id="quoteItems" 
-                                    name="quoteItems" 
-                                    value={quoteItems} 
-                                    onChange={(e) => setQuoteItems(e.target.value)} 
-                                    className="regular-text" 
-                                />
-                            </td>
-                        </tr>
+                        {cotizaciones.map(cotizacion => (
+                            <tr key={cotizacion.id}>
+                                <td>{cotizacion.client_name}</td>
+                                <td>{cotizacion.quote_total}</td>
+                                <td>{cotizacion.quote_items}</td>
+                                <td>
+                                    <button onClick={() => handleGeneratePdf(cotizacion.id)}>
+                                        Generar PDF
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
-                <p className="submit">
-                    <button type="submit" className="button button-primary">{loader}</button>
-                </p>
-            </form>
+                {pdfUrl && <PDFPreview pdfUrl={pdfUrl} />}
+            </div>
         </React.Fragment>
     );
-}
+};
 
 export default AddQuote;

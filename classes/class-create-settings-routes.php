@@ -29,6 +29,13 @@ class WP_React_Settings_Rest_Route {
             'callback' => [ $this, 'add_quote' ],
             'permission_callback' => [ $this, 'add_quote_permission' ]
         ] );
+
+        // Ruta para obtener cotizaciones.
+        register_rest_route( 'wprk/v1', '/quotes', [
+            'methods' => 'GET',
+            'callback' => [ $this, 'get_quotes' ],
+            'permission_callback' => [ $this, 'get_quotes_permission' ]
+        ] );
     }
 
     // Método para obtener configuraciones.
@@ -101,6 +108,37 @@ class WP_React_Settings_Rest_Route {
     // Permisos para agregar una nueva cotización.
     public function add_quote_permission() {
         return current_user_can( 'publish_posts' );
+    }
+
+    // Método para obtener cotizaciones.
+    public function get_quotes() {
+        $args = [
+            'post_type'   => 'quote',
+            'post_status' => 'publish',
+            'posts_per_page' => -1,
+        ];
+
+        $query = new WP_Query( $args );
+        $cotizaciones = [];
+
+        while ( $query->have_posts() ) {
+            $query->the_post();
+            $cotizaciones[] = [
+                'id'          => get_the_ID(),
+                'descripcion' => get_the_title(),
+                'monto'       => get_post_meta( get_the_ID(), '_quote_total', true ),
+                'items'       => get_post_meta( get_the_ID(), '_quote_items', true ),
+            ];
+        }
+
+        wp_reset_postdata();
+
+        return rest_ensure_response( $cotizaciones );
+    }
+
+    // Permisos para obtener cotizaciones.
+    public function get_quotes_permission() {
+        return current_user_can( 'read' );
     }
 }
 
