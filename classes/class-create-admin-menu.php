@@ -25,7 +25,7 @@ class WPRK_Create_Admin_Page {
 
     public function menu_page_template() {
         echo '<div class="wrap"><div id="wprk-admin-app"></div></div>';
-        echo 'Hello World';
+
     }
 
 }

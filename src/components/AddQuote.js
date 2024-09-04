@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './AddQuote.css'; 
 
@@ -20,7 +20,9 @@ const AddQuote = () => {
     });
 
     const [errors, setErrors] = useState({});
-    const [isQuoteAdded, setIsQuoteAdded] = useState(false);
+    //const [isQuoteAdded, setIsQuoteAdded] = useState(false);
+
+    const url = `${appLocalizer.apiUrl}/wprk/v1/get-quote`; // URL corregida
 
     const handleFormChange = (e) => {
         const { name, value } = e.target;
@@ -57,11 +59,10 @@ const AddQuote = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!validateForm()) return;
-        axios.post('/wp-json/wprk/v1/add-quote', formData)
+        axios.post(`${appLocalizer.apiUrl}/wprk/v1/add-quote`, formData)
             .then(response => {
                 if (response.data.status === 'success') {
                     console.log('Cotización guardada con éxito:', response.data);
-                    // Limpiar el formulario si es necesario
                     setFormData({
                         nro_orden: '',
                         nro_de_cotizacion: '',
@@ -87,13 +88,24 @@ const AddQuote = () => {
     };
 
     useEffect(() => {
-        if (isQuoteAdded) {
-            // Aquí podrías forzar la actualización de QuoteList
-            // Por ejemplo, puedes hacer que QuoteList recargue los datos.
-            // El estado `isQuoteAdded` es para saber si la cotización fue añadida.
-            setIsQuoteAdded(false);
-        }
-    }, [isQuoteAdded]);
+        axios.get(url)
+            .then((res) => {
+                const data = res.data;
+                setFormData({
+                    nro_orden: data.nro_orden,
+                    nro_de_cotizacion: data.nro_de_cotizacion,
+                    nro_de_factura: data.nro_de_factura,
+                    fecha: data.fecha,
+                    cliente: data.cliente,
+                    estado: data.estado,
+                    items: data.items || [{ producto: '', cantidad: '', precio_unitario: '', precio: '' }],
+                    nota: data.nota
+                });
+            })
+            .catch(error => {
+                console.error("Error al obtener los datos: ", error);
+            });
+    }, [url]);
 
     return (
         <div className="form-container">
@@ -229,7 +241,6 @@ const AddQuote = () => {
 
                 <button type="submit">Guardar</button>
             </form>
-         
         </div>
     );
 };

@@ -1,27 +1,47 @@
 <?php
 /**
  * This file will create Custom Rest API End Points.
- */class WP_React_Settings_Rest_Route {
+ */
+class WP_React_Settings_Rest_Route {
 
     public function __construct() {
         add_action( 'rest_api_init', [ $this, 'create_rest_routes' ] );
     }
 
     public function create_rest_routes() {
+        error_log('create_rest_routes ejecutado'); // Para depuración
+    
+        // Ruta para obtener configuraciones
+        register_rest_route( 'wprk/v1', '/settings', [
+            'methods' => 'GET',
+            'callback' => [ $this, 'get_settings' ],
+            'permission_callback' => [ $this, 'get_settings_permission' ]
+        ] );
+
+        // Ruta para guardar configuraciones
+        register_rest_route( 'wprk/v1', '/settings', [
+            'methods' => 'POST',
+            'callback' => [ $this, 'save_settings' ],
+            'permission_callback' => [ $this, 'save_settings_permission' ]
+        ] );
+
+        // Ruta para añadir cotización
         register_rest_route( 'wprk/v1', '/add-quote', [
             'methods' => 'POST',
             'callback' => [ $this, 'add_quote' ],
             'permission_callback' => [ $this, 'add_quote_permission' ]
-        ] );
-    
+        ]);
+
+        // Ruta para obtener cotizaciones
         register_rest_route( 'wprk/v1', '/get-quotes', [
             'methods' => 'GET',
             'callback' => [ $this, 'get_quotes' ],
-            'permission_callback' => '__return_true' // Considera seguridad
-        ] );
+            'permission_callback' => '__return_true'
+        ]);
     }
     
-    public function get_quotes( $request ) {
+    
+    public function get_settings( $request ) {
         $args = [
             'post_type'   => 'quote',
             'post_status' => 'publish',
