@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './AddQuote.css';
 
 const QuoteList = () => {
     const [quotes, setQuotes] = useState([]);

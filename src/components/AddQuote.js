@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import './AddQuote.css'; 
-import QuoteList from './QuoteList'; // Asegúrate de importar el componente QuoteList
 
 const AddQuote = () => {
     const [formData, setFormData] = useState({
@@ -21,6 +20,7 @@ const AddQuote = () => {
     });
 
     const [errors, setErrors] = useState({});
+    const [isQuoteAdded, setIsQuoteAdded] = useState(false);
 
     const handleFormChange = (e) => {
         const { name, value } = e.target;
@@ -85,6 +85,15 @@ const AddQuote = () => {
                 console.error('Error al conectar con la API:', error);
             });
     };
+
+    useEffect(() => {
+        if (isQuoteAdded) {
+            // Aquí podrías forzar la actualización de QuoteList
+            // Por ejemplo, puedes hacer que QuoteList recargue los datos.
+            // El estado `isQuoteAdded` es para saber si la cotización fue añadida.
+            setIsQuoteAdded(false);
+        }
+    }, [isQuoteAdded]);
 
     return (
         <div className="form-container">
@@ -220,9 +229,7 @@ const AddQuote = () => {
 
                 <button type="submit">Guardar</button>
             </form>
-
-            {/* Aquí llamamos al componente QuoteList */}
-            <QuoteList />
+         
         </div>
     );
 };
