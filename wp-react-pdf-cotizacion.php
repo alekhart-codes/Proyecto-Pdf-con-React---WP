@@ -20,6 +20,7 @@ define ( 'WPRK_URL', trailingslashit( plugins_url( '/', __FILE__ ) ) );
  * Loading Necessary Scripts
  */
 add_action( 'admin_enqueue_scripts', 'load_scripts' );
+
 function load_scripts() {
     wp_enqueue_script( 'wp-react-pdf-cotizacion', WPRK_URL . 'dist/bundle.js', [ 'jquery', 'wp-element' ], wp_rand(), true );
     wp_localize_script( 'wp-react-pdf-cotizacion', 'appLocalizer', [

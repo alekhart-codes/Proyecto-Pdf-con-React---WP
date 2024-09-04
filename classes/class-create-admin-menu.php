@@ -14,8 +14,8 @@ class WPRK_Create_Admin_Page {
         $slug = 'wprk-settings';
 
         add_menu_page(
-            __( 'WP React KickOff', 'wp-react-kickoff' ),
-            __( 'WP React KickOff', 'wp-react-kickoff' ),
+            __( 'Cotidazor PDF', 'wp-react-pdf-cotizacion' ),
+            __( 'Cotizador PDF', 'wp-react-pdf-cotizacion' ),
             $capability,
             $slug,
             [ $this, 'menu_page_template' ],

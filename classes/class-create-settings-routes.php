@@ -9,18 +9,29 @@ class WP_React_Settings_Rest_Route {
     }
 
     public function create_rest_routes() {
+        // Ruta para obtener configuraciones.
         register_rest_route( 'wprk/v1', '/settings', [
             'methods' => 'GET',
             'callback' => [ $this, 'get_settings' ],
             'permission_callback' => [ $this, 'get_settings_permission' ]
         ] );
+
+        // Ruta para guardar configuraciones.
         register_rest_route( 'wprk/v1', '/settings', [
             'methods' => 'POST',
             'callback' => [ $this, 'save_settings' ],
             'permission_callback' => [ $this, 'save_settings_permission' ]
         ] );
+
+        // Nueva ruta para crear una cotización.
+        register_rest_route( 'wprk/v1', '/add-quote', [
+            'methods' => 'POST',
+            'callback' => [ $this, 'add_quote' ],
+            'permission_callback' => [ $this, 'add_quote_permission' ]
+        ] );
     }
 
+    // Método para obtener configuraciones.
     public function get_settings() {
         $firstname = get_option( 'wprk_settings_firstname' );
         $lastname  = get_option( 'wprk_settings_lastname' );
@@ -34,10 +45,12 @@ class WP_React_Settings_Rest_Route {
         return rest_ensure_response( $response );
     }
 
+    // Permisos para obtener configuraciones.
     public function get_settings_permission() {
         return true;
     }
 
+    // Método para guardar configuraciones.
     public function save_settings( $req ) {
         $firstname = sanitize_text_field( $req['firstname'] );
         $lastname  = sanitize_text_field( $req['lastname'] );
@@ -48,8 +61,48 @@ class WP_React_Settings_Rest_Route {
         return rest_ensure_response( 'success' );
     }
 
+    // Permisos para guardar configuraciones.
     public function save_settings_permission() {
         return current_user_can( 'publish_posts' );
     }
+
+    // Método para agregar una nueva cotización.
+    public function add_quote( $req ) {
+        // Valida y sanitiza los datos recibidos desde el request.
+        $client_name = sanitize_text_field( $req['client_name'] );
+        $quote_total = sanitize_text_field( $req['quote_total'] );
+        $quote_items = sanitize_text_field( $req['quote_items'] );
+
+        // Crea un nuevo post de tipo "cotización".
+        $quote_id = wp_insert_post([
+            'post_title'   => $client_name,
+            'post_type'    => 'quote',
+            'post_status'  => 'publish',
+            'meta_input'   => [
+                '_quote_total' => $quote_total,
+                '_quote_items' => $quote_items,
+            ],
+        ]);
+
+        // Verifica si la creación del post fue exitosa.
+        if (is_wp_error($quote_id)) {
+            return rest_ensure_response([
+                'status'  => 'error',
+                'message' => 'No se pudo crear la cotización.',
+            ]);
+        }
+
+        return rest_ensure_response([
+            'status'  => 'success',
+            'quote_id' => $quote_id,
+        ]);
+    }
+
+    // Permisos para agregar una nueva cotización.
+    public function add_quote_permission() {
+        return current_user_can( 'publish_posts' );
+    }
 }
+
+// Inicializa la clase para que las rutas se registren.
 new WP_React_Settings_Rest_Route();
