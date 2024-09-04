@@ -4,8 +4,10 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Settings from './components/Settings';
 import AddQuote from './components/AddQuote';
 import PDFPreview from './components/PDFPreview';
+import Home from './components/Home';
 
 function App() {
+    console.log("App is rendering");
     return (
         <Router>
             <Routes>
