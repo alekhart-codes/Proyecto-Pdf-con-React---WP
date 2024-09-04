@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import './AddQuote.css'; // Importa el archivo CSS para el estilo
+import './AddQuote.css'; 
+import QuoteList from './QuoteList'; // Asegúrate de importar el componente QuoteList
 
 const AddQuote = () => {
     const [formData, setFormData] = useState({
@@ -219,6 +220,9 @@ const AddQuote = () => {
 
                 <button type="submit">Guardar</button>
             </form>
+
+            {/* Aquí llamamos al componente QuoteList */}
+            <QuoteList />
         </div>
     );
 };

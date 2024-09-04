@@ -13,7 +13,42 @@
             'callback' => [ $this, 'add_quote' ],
             'permission_callback' => [ $this, 'add_quote_permission' ]
         ] );
+    
+        register_rest_route( 'wprk/v1', '/get-quotes', [
+            'methods' => 'GET',
+            'callback' => [ $this, 'get_quotes' ],
+            'permission_callback' => '__return_true' // Considera seguridad
+        ] );
     }
+    
+    public function get_quotes( $request ) {
+        $args = [
+            'post_type'   => 'quote',
+            'post_status' => 'publish',
+            'numberposts' => -1
+        ];
+    
+        $quotes = get_posts( $args );
+        $response = [];
+    
+        foreach ( $quotes as $quote ) {
+            $meta = get_post_meta( $quote->ID );
+            $response[] = [
+                'id' => $quote->ID,
+                'title' => $quote->post_title,
+                'nro_orden' => $meta['_nro_orden'][0] ?? '',
+                'nro_de_cotizacion' => $meta['_nro_de_cotizacion'][0] ?? '',
+                'nro_de_factura' => $meta['_nro_de_factura'][0] ?? '',
+                'fecha' => $meta['_fecha'][0] ?? '',
+                'estado' => $meta['_estado'][0] ?? '',
+                'items' => maybe_unserialize( $meta['_items'][0] ) ?? [],
+                'nota' => $meta['_nota'][0] ?? '',
+            ];
+        }
+    
+        return rest_ensure_response( $response );
+    }
+    
 
     public function add_quote( $req ) {
         $nro_orden = sanitize_text_field( $req['nro_orden'] );
@@ -38,7 +73,7 @@
                 '_items' => maybe_serialize( $items ),
                 '_nota' => $nota,
             ],
-        ]);
+        ]); 
 
         if (is_wp_error($quote_id)) {
             return rest_ensure_response([

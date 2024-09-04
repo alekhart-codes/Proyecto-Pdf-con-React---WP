@@ -3,7 +3,7 @@
  * Plugin Name: Cotizaciones PDF
  * Author: Victor Molina
  * Author URI: https://github.com/VitokoMp
- * Version: 1.0.4
+ * Version: 1.0.6
  * Description: WordPress React pdf cotizacion.
  * Text-Domain: wp-react-pdf-cotizacion
  */
