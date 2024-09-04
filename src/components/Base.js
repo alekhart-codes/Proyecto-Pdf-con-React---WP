@@ -1,7 +1,8 @@
 // components/Home.js
 import React from 'react';
 
-function Home() {
+function Base() {
+    console.log("Im home");
     return (
         <div>
             <h1>Hello World, im at home!</h1>
@@ -10,4 +11,4 @@ function Home() {
     );
 }
 
-export default Home;
+export default Base;

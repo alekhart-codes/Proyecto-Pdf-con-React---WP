@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import App from './App';
 import { createRoot } from 'react-dom/client';
 
@@ -9,5 +8,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (typeof element !== 'undefined' && element !== null) {
         const root = createRoot(element);
         root.render(<App />);
+        console.log("App in");
     }
 });
