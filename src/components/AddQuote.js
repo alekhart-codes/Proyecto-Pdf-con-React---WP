@@ -55,11 +55,20 @@ const AddQuote = () => {
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
-
+    console.log(appLocalizer.nonce)
     const handleSubmit = (e) => {
         e.preventDefault();
+
         if (!validateForm()) return;
-        axios.post(`${appLocalizer.apiUrl}/wprk/v1/add-quote`, formData)
+        
+        axios.post(
+            `${appLocalizer.apiUrl}/wprk/v1/add-quote`, 
+            formData,
+            {
+            headers: {
+                'content-type': 'application/json',
+                'X-WP-NONCE': appLocalizer.nonce
+            }})
             .then(response => {
                 if (response.data.status === 'success') {
                     console.log('Cotización guardada con éxito:', response.data);

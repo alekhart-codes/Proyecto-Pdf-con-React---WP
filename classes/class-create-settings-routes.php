@@ -9,22 +9,7 @@ class WP_React_Settings_Rest_Route {
     }
 
     public function create_rest_routes() {
-        error_log('create_rest_routes ejecutado'); // Para depuración
-    
-        // Ruta para obtener configuraciones
-        register_rest_route( 'wprk/v1', '/settings', [
-            'methods' => 'GET',
-            'callback' => [ $this, 'get_settings' ],
-            'permission_callback' => [ $this, 'get_settings_permission' ]
-        ] );
-
-        // Ruta para guardar configuraciones
-        register_rest_route( 'wprk/v1', '/settings', [
-            'methods' => 'POST',
-            'callback' => [ $this, 'save_settings' ],
-            'permission_callback' => [ $this, 'save_settings_permission' ]
-        ] );
-
+     
         // Ruta para añadir cotización
         register_rest_route( 'wprk/v1', '/add-quote', [
             'methods' => 'POST',
@@ -38,10 +23,17 @@ class WP_React_Settings_Rest_Route {
             'callback' => [ $this, 'get_quotes' ],
             'permission_callback' => '__return_true'
         ]);
+
+        //ruta para obtener ultima cotizacion
+        register_rest_route( 'wprk/v1', '/get_last_quote' , [
+            'methods' => 'GET',
+            'callback' => [ $this, 'get_last_quote' ],
+            'permission_callback' => '__return_true'
+        ]);
     }
     
-    
-    public function get_settings( $request ) {
+    public function get_quotes() {
+
         $args = [
             'post_type'   => 'quote',
             'post_status' => 'publish',
@@ -71,8 +63,9 @@ class WP_React_Settings_Rest_Route {
     
 
     public function add_quote( $req ) {
+        $nro_de_cotizacion_auto = sanitize_text_field( $req['nro_cotizacion_ultimo'] );
         $nro_orden = sanitize_text_field( $req['nro_orden'] );
-        $nro_de_cotizacion = sanitize_text_field( $req['nro_de_cotizacion'] );
+        $nro_de_cotizacion = sanitize_text_field( $req[$nro_de_cotizacion_auto] );
         $nro_de_factura = sanitize_text_field( $req['nro_de_factura'] );
         $fecha = sanitize_text_field( $req['fecha'] );
         $cliente = sanitize_text_field( $req['cliente'] );
@@ -84,9 +77,9 @@ class WP_React_Settings_Rest_Route {
             'post_title'   => $cliente,
             'post_type'    => 'quote',
             'post_status'  => 'publish',
+            'ID' => $nro_de_cotizacion,
             'meta_input'   => [
-                '_nro_orden' => $nro_orden,
-                '_nro_de_cotizacion' => $nro_de_cotizacion,
+                '_nro_orden' => $nro_orden,                
                 '_nro_de_factura' => $nro_de_factura,
                 '_fecha' => $fecha,
                 '_estado' => $estado,
