@@ -24,14 +24,9 @@ class WP_React_Settings_Rest_Route {
             'permission_callback' => '__return_true'
         ]);
 
-        //ruta para obtener ultima cotizacion
-        register_rest_route( 'wprk/v1', '/get_last_quote' , [
-            'methods' => 'GET',
-            'callback' => [ $this, 'get_last_quote' ],
-            'permission_callback' => '__return_true'
-        ]);
+      
     }
-    
+
     public function get_quotes() {
 
         $args = [
@@ -61,23 +56,20 @@ class WP_React_Settings_Rest_Route {
         return rest_ensure_response( $response );
     }
     
-
     public function add_quote( $req ) {
-        $nro_de_cotizacion_auto = sanitize_text_field( $req['nro_cotizacion_ultimo'] );
         $nro_orden = sanitize_text_field( $req['nro_orden'] );
-        $nro_de_cotizacion = sanitize_text_field( $req[$nro_de_cotizacion_auto] );
         $nro_de_factura = sanitize_text_field( $req['nro_de_factura'] );
         $fecha = sanitize_text_field( $req['fecha'] );
         $cliente = sanitize_text_field( $req['cliente'] );
         $estado = sanitize_text_field( $req['estado'] );
         $items = $req['items'];
         $nota = sanitize_textarea_field( $req['nota'] );
-
+    
+        // Inserta la cotización sin el campo `nro_de_cotizacion`
         $quote_id = wp_insert_post([
             'post_title'   => $cliente,
             'post_type'    => 'quote',
             'post_status'  => 'publish',
-            'ID' => $nro_de_cotizacion,
             'meta_input'   => [
                 '_nro_orden' => $nro_orden,                
                 '_nro_de_factura' => $nro_de_factura,
@@ -87,23 +79,38 @@ class WP_React_Settings_Rest_Route {
                 '_nota' => $nota,
             ],
         ]); 
-
+    
         if (is_wp_error($quote_id)) {
             return rest_ensure_response([
                 'status'  => 'error',
                 'message' => 'No se pudo crear la cotización.',
             ]);
         }
-
-        return rest_ensure_response([
-            'status'  => 'success',
+    
+        // Generar automáticamente el número de cotización basado en el ID del post
+        $nro_de_cotizacion = 'COT-' . str_pad($quote_id, 6, '0', STR_PAD_LEFT);
+    
+        // Guardar el número de cotización generado en el meta
+        update_post_meta($quote_id, '_nro_de_cotizacion', $nro_de_cotizacion);
+    
+        // Recuperar los datos guardados para enviarlos en la respuesta
+        $meta = get_post_meta($quote_id);
+    
+        $response = [
+            'status' => 'success',
             'quote_id' => $quote_id,
-        ]);
+            'nro_orden' => $meta['_nro_orden'][0] ?? '',
+            'nro_de_cotizacion' => $nro_de_cotizacion,
+            'nro_de_factura' => $meta['_nro_de_factura'][0] ?? '',
+            'fecha' => $meta['_fecha'][0] ?? '',
+            'cliente' => $cliente,
+            'estado' => $meta['_estado'][0] ?? '',
+            'items' => maybe_unserialize( $meta['_items'][0] ) ?? [],
+            'nota' => $meta['_nota'][0] ?? '',
+        ];
+    
+        return rest_ensure_response($response);
     }
-
-    public function add_quote_permission() {
-        return current_user_can( 'publish_posts' );
-    }
-}
-
+    
+     
 new WP_React_Settings_Rest_Route();
