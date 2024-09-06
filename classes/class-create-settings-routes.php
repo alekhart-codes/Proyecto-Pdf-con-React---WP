@@ -5,25 +5,25 @@
 class WP_React_Settings_Rest_Route {
 
     public function __construct() {
-        add_action( 'rest_api_init', [ $this, 'create_rest_routes' ] );
+        add_action('rest_api_init', [$this, 'create_rest_routes']);
     }
 
     public function create_rest_routes() {
-     
         // Ruta para añadir cotización
-        register_rest_route( 'wprk/v1', '/add-quote', [
+        register_rest_route('wprk/v1', '/add-quote', [
             'methods' => 'POST',
-            'callback' => [ $this, 'add_quote' ],
-            'permission_callback' => [ $this, 'add_quote_permission' ]
+            'callback' => [$this, 'add_quote'],
+            'permission_callback' => [$this, 'add_quote_permission']
         ]);
 
         // Ruta para obtener cotizaciones
-        register_rest_route( 'wprk/v1', '/get-quotes', [
+        register_rest_route('wprk/v1', '/get-quotes', [
             'methods' => 'GET',
-            'callback' => [ $this, 'get_quotes' ],
+            'callback' => [$this, 'get_quotes'],
             'permission_callback' => '__return_true'
         ]);
     }
+
     public function get_quotes() {
         $args = [
             'post_type'   => 'quote',
@@ -33,17 +33,13 @@ class WP_React_Settings_Rest_Route {
     
         $quotes = get_posts($args);
         $response = [];
-        
+    
         foreach ($quotes as $quote) {
             $meta = get_post_meta($quote->ID);
-            $items_serialized = $meta['_items'][0] ?? '';
+            $items_json = $meta['_items'][0] ?? '';
     
-            // Intentar deserializar
-            if ($items_serialized && is_serialized($items_serialized)) {
-                $items = maybe_unserialize($items_serialized);
-            } else {
-                $items = [];
-            }
+            // Decodificar JSON
+            $items = $items_json ? json_decode($items_json, true) : [];
     
             $response[] = [
                 'id' => $quote->ID,
@@ -63,7 +59,7 @@ class WP_React_Settings_Rest_Route {
         return rest_ensure_response($response);
     }
     
-    
+
     public function add_quote( $req ) {
         $nro_de_cotizacion_auto = sanitize_text_field( $req['nro_cotizacion_ultimo'] );
         $nro_orden = sanitize_text_field( $req['nro_orden'] );
@@ -72,10 +68,9 @@ class WP_React_Settings_Rest_Route {
         $fecha = sanitize_text_field( $req['fecha'] );
         $cliente = sanitize_text_field( $req['cliente'] );
         $estado = sanitize_text_field( $req['estado'] );
-        $items = $req['items'];
+        $items = json_encode($req['items']); // Convertir a JSON
         $nota = sanitize_textarea_field( $req['nota'] );
     
-        // Inserta la cotización sin el campo `nro_de_cotizacion`
         $quote_id = wp_insert_post([
             'post_title'   => $cliente,
             'post_type'    => 'quote',
@@ -85,7 +80,7 @@ class WP_React_Settings_Rest_Route {
                 '_nro_de_factura' => $nro_de_factura,
                 '_fecha' => $fecha,
                 '_estado' => $estado,
-                '_items' => maybe_serialize( $items ),  // Serializa para almacenar
+                '_items' => $items,  // Guardar como JSON
                 '_nota' => $nota,
             ],
         ]); 
@@ -97,13 +92,9 @@ class WP_React_Settings_Rest_Route {
             ]);
         }
     
-        // Generar automáticamente el número de cotización basado en el ID del post
         $nro_de_cotizacion = 'COT-' . str_pad($quote_id, 6, '0', STR_PAD_LEFT);
-    
-        // Guardar el número de cotización generado en el meta
         update_post_meta($quote_id, '_nro_de_cotizacion', $nro_de_cotizacion);
     
-        // Recuperar los datos guardados para enviarlos en la respuesta
         $meta = get_post_meta($quote_id);
     
         $response = [
@@ -115,15 +106,16 @@ class WP_React_Settings_Rest_Route {
             'fecha' => $meta['_fecha'][0] ?? '',
             'cliente' => $cliente,
             'estado' => $meta['_estado'][0] ?? '',
-            'items' => maybe_unserialize( $meta['_items'][0] ) ?? [],  // Deserializa para enviar
+            'items' => json_decode($meta['_items'][0] ?? '[]', true),  // Decodificar como JSON
             'nota' => $meta['_nota'][0] ?? '',
         ];
     
         return rest_ensure_response($response);
     }
     
+
     public function add_quote_permission() {
-        return current_user_can( 'publish_posts' );
+        return current_user_can('publish_posts');
     }
 }
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { unserialize } from 'php-serialize'; // Importa la función unserialize
 
 const QuoteList = () => {
     const [quotes, setQuotes] = useState([]);
@@ -18,13 +17,9 @@ const QuoteList = () => {
         })
         .then(response => {
             console.log('Respuesta de la API:', response.data); // Verifica la estructura
+
             if (response.data && Array.isArray(response.data)) {
-                // Deserializa los items
-                const updatedQuotes = response.data.map(quote => ({
-                    ...quote,
-                    items: quote.items ? unserialize(quote.items) : []
-                }));
-                setQuotes(updatedQuotes);
+                setQuotes(response.data);
             } else {
                 console.error('Respuesta de la API no contiene cotizaciones válidas:', response.data);
                 setError('Error al leer las cotizaciones');
