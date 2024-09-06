@@ -1,15 +1,38 @@
+/* styles.css */
+
 .quote-list {
     padding: 20px;
+}
+
+.quote-list table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.quote-list th, .quote-list td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.quote-list th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+.quote-list tr:nth-child(even) {
+    background-color: #f9f9f9;
 }
 
 .quote-list ul {
     list-style-type: none;
     padding: 0;
+    margin: 0;
 }
 
 .quote-list li {
     border-bottom: 1px solid #ddd;
-    padding: 10px 0;
+    padding: 5px 0;
 }
 
 .quote-list h3 {

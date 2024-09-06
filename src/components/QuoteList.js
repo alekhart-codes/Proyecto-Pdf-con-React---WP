@@ -1,32 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { unserialize } from 'php-serialize'; // Importa la función unserialize
 
 const QuoteList = () => {
     const [quotes, setQuotes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
 
     const url = `${appLocalizer.apiUrl}/wprk/v1/get-quotes`;
 
-    const fetchQuotes = (page) => {
-        setLoading(true);
+    useEffect(() => {
         axios.get(url, {
             headers: {
                 'content-type': 'application/json',
                 'X-WP-NONCE': appLocalizer.nonce
-            },
-            params: {
-                page,
             }
         })
         .then(response => {
+            console.log('Respuesta de la API:', response.data); // Verifica la estructura
             if (response.data && Array.isArray(response.data)) {
-                setQuotes(prevQuotes => [...prevQuotes, ...response.data]);
-                setHasMore(response.data.length > 0);
+                // Deserializa los items
+                const updatedQuotes = response.data.map(quote => ({
+                    ...quote,
+                    items: quote.items ? unserialize(quote.items) : []
+                }));
+                setQuotes(updatedQuotes);
             } else {
-                setHasMore(false);
+                console.error('Respuesta de la API no contiene cotizaciones válidas:', response.data);
+                setError('Error al leer las cotizaciones');
             }
             setLoading(false);
         })
@@ -35,22 +36,9 @@ const QuoteList = () => {
             setError('Error al recuperar las cotizaciones');
             setLoading(false);
         });
-    };
+    }, []);
 
-    useEffect(() => {
-        fetchQuotes(page);
-    }, [page]);
-
-    const handleScroll = (e) => {
-        if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight || loading) return;
-        setPage(prevPage => prevPage + 1);
-    };
-
-    useEffect(() => {
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, [loading]);
-
+    if (loading) return <p>Cargando cotizaciones...</p>;
     if (error) return <p>{error}</p>;
 
     return (
@@ -59,6 +47,7 @@ const QuoteList = () => {
             <table>
                 <thead>
                     <tr>
+                        <th>Título</th>
                         <th>Nro. de Orden</th>
                         <th>Nro. de Cotización</th>
                         <th>Nro. de Factura</th>
@@ -71,6 +60,7 @@ const QuoteList = () => {
                 <tbody>
                     {quotes.map(quote => (
                         <tr key={quote.id}>
+                            <td>{quote.title}</td>
                             <td>{quote.nro_orden}</td>
                             <td>{quote.nro_de_cotizacion}</td>
                             <td>{quote.nro_de_factura}</td>
@@ -97,10 +87,9 @@ const QuoteList = () => {
                     ))}
                 </tbody>
             </table>
-            {loading && <p>Cargando más cotizaciones...</p>}
-            {!hasMore && !loading && <p>No hay más cotizaciones para mostrar.</p>}
         </div>
     );
 };
 
 export default QuoteList;
+

@@ -24,7 +24,6 @@ class WP_React_Settings_Rest_Route {
             'permission_callback' => '__return_true'
         ]);
     }
-
     public function get_quotes() {
         $args = [
             'post_type'   => 'quote',
@@ -34,10 +33,17 @@ class WP_React_Settings_Rest_Route {
     
         $quotes = get_posts($args);
         $response = [];
-    
+        
         foreach ($quotes as $quote) {
             $meta = get_post_meta($quote->ID);
-            $items = maybe_unserialize($meta['_items'][0]) ?? [];
+            $items_serialized = $meta['_items'][0] ?? '';
+    
+            // Intentar deserializar
+            if ($items_serialized && is_serialized($items_serialized)) {
+                $items = maybe_unserialize($items_serialized);
+            } else {
+                $items = [];
+            }
     
             $response[] = [
                 'id' => $quote->ID,
@@ -47,7 +53,7 @@ class WP_React_Settings_Rest_Route {
                 'nro_de_factura' => $meta['_nro_de_factura'][0] ?? '',
                 'fecha' => $meta['_fecha'][0] ?? '',
                 'estado' => $meta['_estado'][0] ?? '',
-                'items' => $items,  // Ya deserializado
+                'items' => $items,
                 'nota' => $meta['_nota'][0] ?? '',
             ];
         }
@@ -56,6 +62,7 @@ class WP_React_Settings_Rest_Route {
     
         return rest_ensure_response($response);
     }
+    
     
     public function add_quote( $req ) {
         $nro_de_cotizacion_auto = sanitize_text_field( $req['nro_cotizacion_ultimo'] );
