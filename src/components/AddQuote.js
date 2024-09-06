@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import './AddQuote.css'; 
+import './AddQuote.css';
 
 const AddQuote = () => {
     const [formData, setFormData] = useState({
@@ -20,7 +20,6 @@ const AddQuote = () => {
     });
 
     const [errors, setErrors] = useState({});
-    //const [isQuoteAdded, setIsQuoteAdded] = useState(false);
 
     const url = `${appLocalizer.apiUrl}/wprk/v1/get-quote`; // URL corregida
 
@@ -55,7 +54,7 @@ const AddQuote = () => {
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
-    console.log(appLocalizer.nonce)
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -65,35 +64,32 @@ const AddQuote = () => {
             `${appLocalizer.apiUrl}/wprk/v1/add-quote`, 
             formData,
             {
-            headers: {
-                'content-type': 'application/json',
-                'X-WP-NONCE': appLocalizer.nonce
-            }})
-            .then(response => {
-                if (response.data.status === 'success') {
-                    console.log('Cotización guardada con éxito:', response.data);
-                    setFormData({
-                        nro_orden: '',
-                        nro_de_cotizacion: '',
-                        nro_de_factura: '',
-                        fecha: '',
-                        cliente: '',
-                        estado: '',
-                        items: [{
-                            producto: '',
-                            cantidad: '',
-                            precio_unitario: '',
-                            precio: ''
-                        }],
-                        nota: ''
-                    });
-                } else {
-                    console.error('Error al guardar la cotización:', response.data.message);
+                headers: {
+                    'content-type': 'application/json',
+                    'X-WP-NONCE': appLocalizer.nonce
                 }
-            })
-            .catch(error => {
-                console.error('Error al conectar con la API:', error);
-            });
+            }
+        )
+        .then(response => {
+            if (response.data.status === 'success') {
+                console.log('Cotización guardada con éxito:', response.data);
+                setFormData({
+                    nro_orden: '',
+                    nro_de_cotizacion: '',
+                    nro_de_factura: '',
+                    fecha: '',
+                    cliente: '',
+                    estado: '',
+                    items: [{ producto: '', cantidad: '', precio_unitario: '', precio: '' }],
+                    nota: ''
+                });
+            } else {
+                console.error('Error al guardar la cotización:', response.data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error al conectar con la API:', error);
+        });
     };
 
     useEffect(() => {
@@ -118,79 +114,87 @@ const AddQuote = () => {
 
     return (
         <div className="form-container">
-            <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label htmlFor="nro_orden">Nro. de Orden</label>
-                    <input
-                        type="text"
-                        id="nro_orden"
-                        name="nro_orden"
-                        value={formData.nro_orden}
-                        onChange={handleFormChange}
-                    />
-                    {errors.nro_orden && <p className="error">{errors.nro_orden}</p>}
+        <form onSubmit={handleSubmit}>
+            <div className="form-row">
+                <div className="form-column">
+                    <div className="form-group">
+                        <label htmlFor="nro_orden">Nro. de Orden</label>
+                        <input
+                            type="text"
+                            id="nro_orden"
+                            name="nro_orden"
+                            value={formData.nro_orden}
+                            onChange={handleFormChange}
+                        />
+                        {errors.nro_orden && <p className="error">{errors.nro_orden}</p>}
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="nro_de_cotizacion">Nro de Cotización</label>
+                        <input
+                            type="text"
+                            id="nro_de_cotizacion"
+                            name="nro_de_cotizacion"
+                            value={formData.nro_de_cotizacion}
+                            placeholder="Se asignará automáticamente al crear"
+                            onChange={handleFormChange}
+                            disabled
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="nro_de_factura">Nro de Factura</label>
+                        <input
+                            type="text"
+                            id="nro_de_factura"
+                            name="nro_de_factura"
+                            value={formData.nro_de_factura}
+                            onChange={handleFormChange}
+                        />
+                    </div>
                 </div>
-                <div className="form-group">
-                    <label htmlFor="nro_de_cotizacion">Nro de Cotización</label>
-                    <input
-                        type="text"
-                        id="nro_de_cotizacion"
-                        name="nro_de_cotizacion"
-                        value={formData.nro_de_cotizacion}
-                        placeholder="Se asignará automáticamente al crear"
-                        onChange={handleFormChange}
-                        disabled
-                    />
+    
+                <div className="form-column">
+                    <div className="form-group">
+                        <label htmlFor="fecha">Fecha</label>
+                        <input
+                            type="date"
+                            id="fecha"
+                            name="fecha"
+                            value={formData.fecha}
+                            onChange={handleFormChange}
+                        />
+                        {errors.fecha && <p className="error">{errors.fecha}</p>}
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="cliente">Cliente</label>
+                        <input
+                            type="text"
+                            id="cliente"
+                            name="cliente"
+                            value={formData.cliente}
+                            onChange={handleFormChange}
+                        />
+                        {errors.cliente && <p className="error">{errors.cliente}</p>}
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="estado">Estado</label>
+                        <select
+                            id="estado"
+                            name="estado"
+                            value={formData.estado}
+                            onChange={handleFormChange}
+                        >
+                            <option value="">- Selecciona -</option>
+                            <option value="Espera">Espera</option>
+                            <option value="Aprobada">Aprobada</option>
+                            <option value="Aprobada sin OC">Aprobada sin OC</option>
+                            <option value="Facturada">Facturada</option>
+                            <option value="Cancelada">Cancelada</option>
+                        </select>
+                    </div>
                 </div>
-                <div className="form-group">
-                    <label htmlFor="nro_de_factura">Nro de Factura</label>
-                    <input
-                        type="text"
-                        id="nro_de_factura"
-                        name="nro_de_factura"
-                        value={formData.nro_de_factura}
-                        onChange={handleFormChange}
-                    />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="fecha">Fecha</label>
-                    <input
-                        type="date"
-                        id="fecha"
-                        name="fecha"
-                        value={formData.fecha}
-                        onChange={handleFormChange}
-                    />
-                    {errors.fecha && <p className="error">{errors.fecha}</p>}
-                </div>
-                <div className="form-group">
-                    <label htmlFor="cliente">Cliente</label>
-                    <input
-                        type="text"
-                        id="cliente"
-                        name="cliente"
-                        value={formData.cliente}
-                        onChange={handleFormChange}
-                    />
-                    {errors.cliente && <p className="error">{errors.cliente}</p>}
-                </div>
-                <div className="form-group">
-                    <label htmlFor="estado">Estado</label>
-                    <select
-                        id="estado"
-                        name="estado"
-                        value={formData.estado}
-                        onChange={handleFormChange}
-                    >
-                        <option value="">- Selecciona -</option>
-                        <option value="Espera">Espera</option>
-                        <option value="Aprobada">Aprobada</option>
-                        <option value="Aprobada sin OC">Aprobada sin OC</option>
-                        <option value="Facturada">Facturada</option>
-                        <option value="Cancelada">Cancelada</option>
-                    </select>
-                </div>
-
+            </div>
+    
+            <div className="full-width">
                 {formData.items.map((item, index) => (
                     <div key={index} className="form-group item-group">
                         <div className="form-group">
@@ -235,9 +239,9 @@ const AddQuote = () => {
                         {errors.items && <p className="error">{errors.items}</p>}
                     </div>
                 ))}
-
+    
                 <button type="button" onClick={addNewItem}>Añadir Línea</button>
-
+    
                 <div className="form-group">
                     <label htmlFor="nota">Nota</label>
                     <textarea
@@ -247,10 +251,12 @@ const AddQuote = () => {
                         onChange={handleFormChange}
                     />
                 </div>
-
-                <button type="submit">Guardar</button>
-            </form>
-        </div>
+            </div>
+    
+            <button type="submit">Guardar</button>
+        </form>
+    </div>
+    
     );
 };
 

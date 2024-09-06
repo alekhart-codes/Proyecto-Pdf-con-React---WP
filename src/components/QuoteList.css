@@ -1,0 +1,22 @@
+.quote-list {
+    padding: 20px;
+}
+
+.quote-list ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.quote-list li {
+    border-bottom: 1px solid #ddd;
+    padding: 10px 0;
+}
+
+.quote-list h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.quote-list p {
+    margin: 5px 0;
+}

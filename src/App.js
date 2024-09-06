@@ -1,12 +1,12 @@
 // App.js
-import React from 'react'; 
-import AddQuote from './components/AddQuote';
+import React from 'react';  
+import QuoteList from './components/QuoteList';
 
 function App() {
     console.log("App is rendering");
     return (
-        <div><AddQuote /></div >
-                
+         
+        <div><QuoteList /></div >                
                 );
 }
 

@@ -23,23 +23,22 @@ class WP_React_Settings_Rest_Route {
             'callback' => [ $this, 'get_quotes' ],
             'permission_callback' => '__return_true'
         ]);
-
-      
     }
 
     public function get_quotes() {
-
         $args = [
             'post_type'   => 'quote',
             'post_status' => 'publish',
             'numberposts' => -1
         ];
     
-        $quotes = get_posts( $args );
+        $quotes = get_posts($args);
         $response = [];
     
-        foreach ( $quotes as $quote ) {
-            $meta = get_post_meta( $quote->ID );
+        foreach ($quotes as $quote) {
+            $meta = get_post_meta($quote->ID);
+            $items = maybe_unserialize($meta['_items'][0]) ?? [];
+    
             $response[] = [
                 'id' => $quote->ID,
                 'title' => $quote->post_title,
@@ -48,16 +47,20 @@ class WP_React_Settings_Rest_Route {
                 'nro_de_factura' => $meta['_nro_de_factura'][0] ?? '',
                 'fecha' => $meta['_fecha'][0] ?? '',
                 'estado' => $meta['_estado'][0] ?? '',
-                'items' => maybe_unserialize( $meta['_items'][0] ) ?? [],
+                'items' => $items,  // Ya deserializado
                 'nota' => $meta['_nota'][0] ?? '',
             ];
         }
     
-        return rest_ensure_response( $response );
+        error_log(print_r($response, true)); // Para depuración
+    
+        return rest_ensure_response($response);
     }
     
     public function add_quote( $req ) {
+        $nro_de_cotizacion_auto = sanitize_text_field( $req['nro_cotizacion_ultimo'] );
         $nro_orden = sanitize_text_field( $req['nro_orden'] );
+        $nro_de_cotizacion = sanitize_text_field( $req[$nro_de_cotizacion_auto] );
         $nro_de_factura = sanitize_text_field( $req['nro_de_factura'] );
         $fecha = sanitize_text_field( $req['fecha'] );
         $cliente = sanitize_text_field( $req['cliente'] );
@@ -75,7 +78,7 @@ class WP_React_Settings_Rest_Route {
                 '_nro_de_factura' => $nro_de_factura,
                 '_fecha' => $fecha,
                 '_estado' => $estado,
-                '_items' => maybe_serialize( $items ),
+                '_items' => maybe_serialize( $items ),  // Serializa para almacenar
                 '_nota' => $nota,
             ],
         ]); 
@@ -105,12 +108,17 @@ class WP_React_Settings_Rest_Route {
             'fecha' => $meta['_fecha'][0] ?? '',
             'cliente' => $cliente,
             'estado' => $meta['_estado'][0] ?? '',
-            'items' => maybe_unserialize( $meta['_items'][0] ) ?? [],
+            'items' => maybe_unserialize( $meta['_items'][0] ) ?? [],  // Deserializa para enviar
             'nota' => $meta['_nota'][0] ?? '',
         ];
     
         return rest_ensure_response($response);
     }
     
-     
+    public function add_quote_permission() {
+        return current_user_can( 'publish_posts' );
+    }
+}
+
+// Instanciar la clase fuera de la definición
 new WP_React_Settings_Rest_Route();
