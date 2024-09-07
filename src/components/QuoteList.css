@@ -1,45 +1,82 @@
-/* styles.css */
-
-.quote-list {
+.quote-list-section {
+    width: 80%;
+    max-width: 1200px;
+    margin: 0 auto;
     padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-.quote-list table {
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.search-bar {
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: center;
+}
+
+.search-bar input {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.quote-list {
+    overflow-x: auto;
+}
+
+table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.quote-list th, .quote-list td {
-    border: 1px solid #ddd;
-    padding: 8px;
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
     text-align: left;
 }
 
-.quote-list th {
-    background-color: #f4f4f4;
+th {
+    background-color: #f8f8f8;
     font-weight: bold;
 }
 
-.quote-list tr:nth-child(even) {
-    background-color: #f9f9f9;
+td a {
+    color: #007bff;
+    text-decoration: none;
 }
 
-.quote-list ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
+td a:hover {
+    text-decoration: underline;
 }
 
-.quote-list li {
-    border-bottom: 1px solid #ddd;
-    padding: 5px 0;
+.trash {
+    color: red;
 }
 
-.quote-list h3 {
-    margin: 0;
-    font-size: 18px;
+.pagination {
+    margin-top: 20px;
+    text-align: center;
 }
 
-.quote-list p {
-    margin: 5px 0;
+.pagination button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin: 5px;
+}
+
+.pagination button:hover {
+    background-color: #0056b3;
 }

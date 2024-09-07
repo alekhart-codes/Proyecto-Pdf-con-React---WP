@@ -5,6 +5,9 @@ const QuoteList = () => {
     const [quotes, setQuotes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [displayedQuotes, setDisplayedQuotes] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [visibleCount, setVisibleCount] = useState(10);
 
     const url = `${appLocalizer.apiUrl}/wprk/v1/get-quotes`;
 
@@ -16,10 +19,11 @@ const QuoteList = () => {
             }
         })
         .then(response => {
-            console.log('Respuesta de la API:', response.data); // Verifica la estructura
+            console.log('Respuesta de la API:', response.data);
 
             if (response.data && Array.isArray(response.data)) {
                 setQuotes(response.data);
+                setDisplayedQuotes(response.data.slice(0, visibleCount));
             } else {
                 console.error('Respuesta de la API no contiene cotizaciones válidas:', response.data);
                 setError('Error al leer las cotizaciones');
@@ -31,60 +35,88 @@ const QuoteList = () => {
             setError('Error al recuperar las cotizaciones');
             setLoading(false);
         });
+    }, [visibleCount]);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+                setVisibleCount(prevCount => prevCount + 2);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    const handleSearch = (e) => {
+        setSearchTerm(e.target.value);
+        const filteredQuotes = quotes.filter(quote => 
+            quote.title.toLowerCase().includes(e.target.value.toLowerCase()) || 
+            quote.nro_de_cotizacion.toString().includes(e.target.value) ||
+            quote.nro_orden.toString().includes(e.target.value) ||
+            quote.nro_de_factura.toString().includes(e.target.value)
+        );
+        setDisplayedQuotes(filteredQuotes.slice(0, visibleCount));
+    };
 
     if (loading) return <p>Cargando cotizaciones...</p>;
     if (error) return <p>{error}</p>;
 
     return (
-        <div className="quote-list">
+        <div className="quote-list-section">
             <h2>Cotizaciones</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Título</th>
-                        <th>Nro. de Orden</th>
-                        <th>Nro. de Cotización</th>
-                        <th>Nro. de Factura</th>
-                        <th>Fecha</th>
-                        <th>Estado</th>
-                        <th>Nota</th>
-                        <th>Items</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {quotes.map(quote => (
-                        <tr key={quote.id}>
-                            <td>{quote.title}</td>
-                            <td>{quote.nro_orden}</td>
-                            <td>{quote.nro_de_cotizacion}</td>
-                            <td>{quote.nro_de_factura}</td>
-                            <td>{quote.fecha}</td>
-                            <td>{quote.estado}</td>
-                            <td>{quote.nota}</td>
-                            <td>
-                                <ul>
-                                    {Array.isArray(quote.items) && quote.items.length > 0 ? (
-                                        quote.items.map((item, index) => (
-                                            <li key={index}>
-                                                <p><strong>Producto:</strong> {item.producto}</p>
-                                                <p><strong>Cantidad:</strong> {item.cantidad}</p>
-                                                <p><strong>Precio Unitario:</strong> {item.precio_unitario}</p>
-                                                <p><strong>Precio:</strong> {item.precio}</p>
-                                            </li>
-                                        ))
-                                    ) : (
-                                        <p>No hay items disponibles.</p>
-                                    )}
-                                </ul>
-                            </td>
+            <div className="search-bar">
+                <input 
+                    type="text" 
+                    placeholder="Buscar cotizaciones..." 
+                    value={searchTerm}
+                    onChange={handleSearch}
+                />
+            </div>
+            <div className="quote-list">
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Título</th>
+                            <th>Nro. Cotización</th>
+                            <th>Nro. Orden</th>
+                            <th>Nro. Factura</th>
+                            <th>Estado</th>
+                            <th>Valor Total</th>
+                            <th>Acciones</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {displayedQuotes.map((quote) => (
+                            <tr key={quote.id}>
+                                <td>
+                                    <input type="checkbox" />
+                                </td>
+                                <td>
+                                    <strong>
+                                        <a href={`/wp-admin/post.php?post=${quote.id}&action=edit`}>
+                                            {quote.title}
+                                        </a>
+                                    </strong>
+                                </td>
+                                <td>{quote.nro_de_cotizacion}</td>
+                                <td>{quote.nro_orden}</td>
+                                <td>{quote.nro_de_factura}</td>
+                                <td>{quote.estado}</td>
+                                <td>$ {quote.total}</td>
+                                <td>
+                                    <a href={`/wp-admin/post.php?post=${quote.id}&action=edit`}>Editar</a> | 
+                                    <a href={`/wp-admin/post.php?post=${quote.id}&action=trash`} className="trash">Eliminar</a> |
+                                    <a href={`/cotizaciones/${quote.slug}`} target="_blank">Ver Cotización</a>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };
 
 export default QuoteList;
-
