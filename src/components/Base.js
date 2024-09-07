@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import generatePdf from './GeneratePDF'; // Asegúrate de importar la función
+import generatePdf from './generatePdf'; // Asegúrate de importar la función correctamente
 import './Base.css'; // Importa el archivo de estilos
-import PDFPreview from './PDFPreview';
+import PDFPreview from './PDFPreview'; // Asegúrate de tener este componente creado
 
 const Base = () => {
     const [showPreview, setShowPreview] = useState(false);
     const [pdfUrl, setPdfUrl] = useState('');
 
+    // Manejar clic para vista previa
     const handlePreviewClick = async () => {
         try {
             const url = await generatePdf();
@@ -17,6 +18,7 @@ const Base = () => {
         }
     };
 
+    // Manejar el cierre de la vista previa
     const handleClosePreview = () => {
         setShowPreview(false);
         setPdfUrl('');

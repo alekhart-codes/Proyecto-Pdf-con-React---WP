@@ -1,5 +1,6 @@
 import { PDFDocument, rgb } from 'pdf-lib';
 
+// Función para generar el PDF
 const generatePdf = async () => {
     try {
         // Crear un nuevo documento PDF
@@ -10,7 +11,7 @@ const generatePdf = async () => {
         const { width, height } = page.getSize();
         
         // Definir una fuente
-        const font = await pdfDoc.embedFont(PDFDocument.Font.Helvetica);
+        const font = await pdfDoc.embedFont(PDFDocument.Font.TimesRoman);
        
         // Agregar texto al documento
         page.drawText('N° Cotización: 18037', {
