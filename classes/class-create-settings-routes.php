@@ -1,6 +1,6 @@
 <?php
 /**
- * This file will create Custom Rest API End Points.
+ * Este archivo creará los puntos finales de la API REST personalizados.
  */
 class WP_React_Settings_Rest_Route {
 
@@ -60,16 +60,14 @@ class WP_React_Settings_Rest_Route {
     }
     
 
-    public function add_quote( $req ) {
-        $nro_de_cotizacion_auto = sanitize_text_field( $req['nro_cotizacion_ultimo'] );
-        $nro_orden = sanitize_text_field( $req['nro_orden'] );
-        $nro_de_cotizacion = sanitize_text_field( $req[$nro_de_cotizacion_auto] );
-        $nro_de_factura = sanitize_text_field( $req['nro_de_factura'] );
-        $fecha = sanitize_text_field( $req['fecha'] );
-        $cliente = sanitize_text_field( $req['cliente'] );
-        $estado = sanitize_text_field( $req['estado'] );
+    public function add_quote($req) {
+        $nro_orden = sanitize_text_field($req['nro_orden']);
+        $nro_de_factura = sanitize_text_field($req['nro_de_factura']);
+        $fecha = sanitize_text_field($req['fecha']);
+        $cliente = sanitize_text_field($req['cliente']);
+        $estado = sanitize_text_field($req['estado']);
         $items = json_encode($req['items']); // Convertir a JSON
-        $nota = sanitize_textarea_field( $req['nota'] );
+        $nota = sanitize_textarea_field($req['nota']);
     
         $quote_id = wp_insert_post([
             'post_title'   => $cliente,

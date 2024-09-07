@@ -18,3 +18,4 @@ const PDFPreview = ({ pdfUrl, onClose }) => {
 };
 
 export default PDFPreview;
+

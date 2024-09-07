@@ -8,9 +8,13 @@ const Base = () => {
     const [pdfUrl, setPdfUrl] = useState('');
 
     const handlePreviewClick = async () => {
-        const url = await generatePdf();
-        setPdfUrl(url);
-        setShowPreview(true);
+        try {
+            const url = await generatePdf();
+            setPdfUrl(url);
+            setShowPreview(true);
+        } catch (error) {
+            console.error('Error al generar el PDF para la vista previa:', error);
+        }
     };
 
     const handleClosePreview = () => {
