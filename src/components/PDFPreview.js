@@ -1,23 +1,18 @@
-// src/components/PDFPreview.js
 import React from 'react';
+import './PDFPreview.css';
 
-const PDFPreview = ({ pdfUrl }) => {
+const PDFPreview = ({ pdfUrl, onClose }) => {
     return (
-        <div>
-            <h3>Vista Previa del PDF</h3>
-            {pdfUrl ? (
+        <div className="pdf-preview-overlay">
+            <div className="pdf-preview-modal">
+                <button className="close-btn" onClick={onClose}>X</button>
                 <iframe
                     src={pdfUrl}
                     width="100%"
-                    height="600px"
-                    style={{ border: 'none' }}
-                    title="Vista Previa del PDF"
-                >
-                    Este navegador no soporta iframes.
-                </iframe>
-            ) : (
-                <p>No se ha generado ningún PDF aún.</p>
-            )}
+                    height="100%"
+                    title="PDF Preview"
+                ></iframe>
+            </div>
         </div>
     );
 };
