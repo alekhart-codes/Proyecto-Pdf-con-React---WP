@@ -1,4 +1,4 @@
-import { PDFDocument, rgb } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
 // Función para generar el PDF
 const generatePdf = async () => {
@@ -11,14 +11,14 @@ const generatePdf = async () => {
         const { width, height } = page.getSize();
         
         // Definir una fuente
-        const font = await pdfDoc.embedFont(PDFDocument.Font.TimesRoman);
-       
+        const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+
         // Agregar texto al documento
         page.drawText('N° Cotización: 18037', {
             x: 50,
             y: height - 50,
             size: 20,
-            font: font,
+            font: timesRomanFont,
             color: rgb(0, 0, 0),
         });
         

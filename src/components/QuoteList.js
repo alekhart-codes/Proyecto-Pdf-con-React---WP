@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import generatePdf from './generatePdf'; // Asegúrate de importar la función correctamente
+import PDFPreview from './PDFPreview'; // Asegúrate de tener este componente creado
 
 const QuoteList = () => {
     const [quotes, setQuotes] = useState([]);
@@ -8,8 +10,26 @@ const QuoteList = () => {
     const [displayedQuotes, setDisplayedQuotes] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [visibleCount, setVisibleCount] = useState(10);
-
+    const [showPreview, setShowPreview] = useState(false);
+    const [pdfUrl, setPdfUrl] = useState('');
     const url = `${appLocalizer.apiUrl}/wprk/v1/get-quotes`;
+    
+    // Manejar clic para vista previa
+    const handlePreviewClick = async () => {
+        try {
+            const url = await generatePdf();
+            setPdfUrl(url);
+            setShowPreview(true);
+        } catch (error) {
+            console.error('Error al generar el PDF para la vista previa:', error);
+        }
+    };
+
+    // Manejar el cierre de la vista previa
+    const handleClosePreview = () => {
+        setShowPreview(false);
+        setPdfUrl('');
+    };
 
     useEffect(() => {
         axios.get(url, {
@@ -108,10 +128,13 @@ const QuoteList = () => {
                                 <td>
                                     <a href={`/wp-admin/post.php?post=${quote.id}&action=edit`}>Editar</a> | 
                                     <a href={`/wp-admin/post.php?post=${quote.id}&action=trash`} className="trash">Eliminar</a> |
-                                    <a href={`/cotizaciones/${quote.slug}`} target="_blank">Ver Cotización</a>
+                                    <a href="#" onClick={handlePreviewClick}>Ver Cotización</a>
                                 </td>
                             </tr>
                         ))}
+                                    {showPreview && (
+                <PDFPreview pdfUrl={pdfUrl} onClose={handleClosePreview} />
+            )}
                     </tbody>
                 </table>
             </div>
