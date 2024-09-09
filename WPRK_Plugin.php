@@ -120,6 +120,7 @@ class WPRK_Plugin {
     }
 
     public function add_quote($req) {
+        // Sanitizar los datos de la solicitud
         $nro_orden = sanitize_text_field($req['nro_orden']);
         $nro_de_factura = sanitize_text_field($req['nro_de_factura']);
         $fecha = sanitize_text_field($req['fecha']);
@@ -127,7 +128,8 @@ class WPRK_Plugin {
         $estado = sanitize_text_field($req['estado']);
         $items = json_encode($req['items']); // Convertir a JSON
         $nota = sanitize_textarea_field($req['nota']);
-
+    
+        // Insertar el post
         $quote_id = wp_insert_post([
             'post_title'   => $cliente,
             'post_type'    => 'quote',
@@ -141,19 +143,23 @@ class WPRK_Plugin {
                 '_nota' => $nota,
             ],
         ]);
-
+    
+        // Manejar errores al insertar el post
         if (is_wp_error($quote_id)) {
             return rest_ensure_response([
                 'status'  => 'error',
                 'message' => 'No se pudo crear la cotización.',
             ]);
         }
-
+    
+        // Crear el número de cotización y actualizar el post meta
         $nro_de_cotizacion = 'COT-' . str_pad($quote_id, 6, '0', STR_PAD_LEFT);
         update_post_meta($quote_id, '_nro_de_cotizacion', $nro_de_cotizacion);
-
+    
+        // Obtener los metadatos del post
         $meta = get_post_meta($quote_id);
-
+    
+        // Preparar la respuesta
         $response = [
             'status' => 'success',
             'quote_id' => $quote_id,
@@ -166,13 +172,19 @@ class WPRK_Plugin {
             'items' => json_decode($meta['_items'][0] ?? '[]', true),  // Decodificar como JSON
             'nota' => $meta['_nota'][0] ?? '',
         ];
-
+    
         return rest_ensure_response($response);
     }
-
+    
     public function add_quote_permission() {
-        return current_user_can('publish_posts');
+        if (current_user_can('publish_posts')) {
+            return true;
+        } else {
+            error_log('El usuario no tiene permisos para publicar posts.');
+            return false;
+        }
     }
+    
 }
 
 // Instanciar la clase

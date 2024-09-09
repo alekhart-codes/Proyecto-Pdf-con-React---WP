@@ -21,7 +21,7 @@ const AddQuote = () => {
 
     const [errors, setErrors] = useState({});
 
-    const url = `${appLocalizer.apiUrl}/wprk/v1/get-quote`; // URL corregida
+    const url = `${appLocalizer.apiUrl}/add-quote`; // URL corregida
 
     const handleFormChange = (e) => {
         const { name, value } = e.target;
@@ -61,7 +61,7 @@ const AddQuote = () => {
         if (!validateForm()) return;
         
         axios.post(
-            `${appLocalizer.apiUrl}/wprk/v1/add-quote`, 
+            `${appLocalizer.apiUrl}/add-quote`, 
             formData,
             {
                 headers: {

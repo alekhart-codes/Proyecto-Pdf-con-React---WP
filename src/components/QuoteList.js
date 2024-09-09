@@ -13,15 +13,16 @@ const QuoteList = () => {
     const [pdfUrl, setPdfUrl] = useState('');
     const url = `${appLocalizer.apiUrl}/get-quotes`; // Verifica que appLocalizer esté definido
 
-    const handlePreviewClick = async () => {
+    const handlePreviewClick = async (quote) => {
         try {
-            const url = await generatePdf(); // Verifica que esta función retorne una URL válida
+            const url = await generatePdf(quote); // Pasar la cotización seleccionada
             setPdfUrl(url);
             setShowPreview(true);
         } catch (error) {
             console.error('Error al generar el PDF para la vista previa:', error);
         }
-    };
+    
+   };
 
     const handleClosePreview = () => {
         setShowPreview(false);
@@ -105,34 +106,35 @@ const QuoteList = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {displayedQuotes.map((quote) => (
-                            <tr key={quote.id}>
-                                <td>
-                                    <input type="checkbox" />
-                                </td>
-                                <td>
-                                    <strong>
-                                        <a href={`/wp-admin/post.php?post=${quote.id}&action=edit`}>
-                                            {quote.title}
-                                        </a>
-                                    </strong>
-                                </td>
-                                <td>{quote.nro_de_cotizacion}</td>
-                                <td>{quote.nro_orden}</td>
-                                <td>{quote.nro_de_factura}</td>
-                                <td>{quote.estado}</td>
-                                <td>$ {quote.total}</td>
-                                <td>
-                                    <a href={`/wp-admin/post.php?post=${quote.id}&action=edit`}>Editar</a> | 
-                                    <a href={`/wp-admin/post.php?post=${quote.id}&action=trash`} className="trash">Eliminar</a> |
-                                    <a href="#" onClick={handlePreviewClick}>Ver Cotización</a>
-                                </td>
-                            </tr>
-                        ))}
-                        {showPreview && (
-                            <PDFPreview pdfUrl={pdfUrl} onClose={handleClosePreview} />
-                        )}
-                    </tbody>
+    {displayedQuotes.map((quote) => (
+        <tr key={quote.id}>
+            <td>
+                <input type="checkbox" />
+            </td>
+            <td>
+                <strong>
+                    <a href={`/wp-admin/post.php?post=${quote.id}&action=edit`}>
+                        {quote.title}
+                    </a>
+                </strong>
+            </td>
+            <td>{quote.nro_de_cotizacion}</td>
+            <td>{quote.nro_orden}</td>
+            <td>{quote.nro_de_factura}</td>
+            <td>{quote.estado}</td>
+            <td>$ {quote.total}</td>
+            <td>
+                <a href={`/wp-admin/post.php?post=${quote.id}&action=edit`}>Editar</a> | 
+                <a href={`/wp-admin/post.php?post=${quote.id}&action=trash`} className="trash">Eliminar</a> |
+                <a href="#" onClick={() => handlePreviewClick(quote)}>Ver Cotización</a> {/* Pasar la cotización */}
+            </td>
+        </tr>
+    ))}
+    {showPreview && (
+        <PDFPreview pdfUrl={pdfUrl} onClose={handleClosePreview} />
+    )}
+</tbody>
+
                 </table>
             </div>
         </div>
