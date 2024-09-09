@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import generatePdf from './generatePdf'; // Asegúrate de importar la función correctamente
-import PDFPreview from './PDFPreview'; // Asegúrate de tener este componente creado
+import generatePdf from './generatePdf'; // Verifica que este archivo y función existan
+import PDFPreview from './PDFPreview'; // Verifica que este archivo y componente existan
 
 const QuoteList = () => {
     const [quotes, setQuotes] = useState([]);
@@ -12,12 +12,11 @@ const QuoteList = () => {
     const [visibleCount, setVisibleCount] = useState(10);
     const [showPreview, setShowPreview] = useState(false);
     const [pdfUrl, setPdfUrl] = useState('');
-    const url = `${appLocalizer.apiUrl}/wprk/v1/get-quotes`;
-    
-    // Manejar clic para vista previa
+    const url = `${appLocalizer.apiUrl}/wprk/v1/get-quotes`; // Verifica que appLocalizer esté definido
+
     const handlePreviewClick = async () => {
         try {
-            const url = await generatePdf();
+            const url = await generatePdf(); // Verifica que esta función retorne una URL válida
             setPdfUrl(url);
             setShowPreview(true);
         } catch (error) {
@@ -25,7 +24,6 @@ const QuoteList = () => {
         }
     };
 
-    // Manejar el cierre de la vista previa
     const handleClosePreview = () => {
         setShowPreview(false);
         setPdfUrl('');
@@ -35,12 +33,11 @@ const QuoteList = () => {
         axios.get(url, {
             headers: {
                 'content-type': 'application/json',
-                'X-WP-NONCE': appLocalizer.nonce
+                'X-WP-NONCE': appLocalizer.nonce // Verifica que appLocalizer.nonce esté definido
             }
         })
         .then(response => {
             console.log('Respuesta de la API:', response.data);
-
             if (response.data && Array.isArray(response.data)) {
                 setQuotes(response.data);
                 setDisplayedQuotes(response.data.slice(0, visibleCount));
@@ -132,9 +129,9 @@ const QuoteList = () => {
                                 </td>
                             </tr>
                         ))}
-                                    {showPreview && (
-                <PDFPreview pdfUrl={pdfUrl} onClose={handleClosePreview} />
-            )}
+                        {showPreview && (
+                            <PDFPreview pdfUrl={pdfUrl} onClose={handleClosePreview} />
+                        )}
                     </tbody>
                 </table>
             </div>

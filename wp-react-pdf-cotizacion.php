@@ -5,15 +5,14 @@
  * Author URI: https://github.com/VitokoMp
  * Version: 1.0.8
  * Description: WordPress React pdf cotizacion.
- * Text-Domain: wp-react-pdf-cotizacion
+ * Text-Domain: wp-react-pdf-cotizacion 
  */
 
-if( ! defined( 'ABSPATH' ) ) : exit(); endif; // No direct access allowed.
+if ( ! defined( 'ABSPATH' ) ) exit; // No direct access allowed.
 
 /**
-* Define Plugins Contants
-
-*/
+ * Define Plugins Constants
+ */
 define ( 'WPRK_PATH', trailingslashit( plugin_dir_path( __FILE__ ) ) );
 define ( 'WPRK_URL', trailingslashit( plugins_url( '/', __FILE__ ) ) );
 
@@ -29,6 +28,9 @@ function load_scripts() {
         'nonce' => wp_create_nonce( 'wp_rest' ),
     ] );
 }
+
+add_action('admin_enqueue_scripts', 'load_scripts');
+
 
 require_once WPRK_PATH . 'classes/class-create-admin-menu.php';
 require_once WPRK_PATH . 'classes/class-create-settings-routes.php';
