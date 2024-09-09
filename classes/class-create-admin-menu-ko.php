@@ -23,25 +23,31 @@ class WPRK_Create_Admin_Page {
             'dashicons-buddicons-replies'
         );
     }
-
+    
     public function menu_page_template() {
-        echo '<div class="wrap"><div id="wprk-admin-app"></div></div>'; // Punto de montaje para tu aplicación React
+        
+        // Contenedor para la aplicación React
+        echo '<div class="wrap">
+            <h1>' . esc_html__('Cotizador PDF', 'wp-react-pdf-cotizacion') . '</h1>
+            <div id="wprk-admin-app"></div>
+        </div>';
     }
-
+    
     public function enqueue_scripts($hook) {
-        // Solo encolar en la página de administración correcta
         if ($hook !== 'toplevel_page_wprk-settings') {
             return;
         }
-
+    
+        // Encolar el script de React
         wp_enqueue_script(
             'my-react-app',
-            plugins_url('/path/to/your/bundle.js', __FILE__), // Ajusta la ruta al archivo bundle.js de tu aplicación React
-            ['wp-element'], // Dependencias, incluyendo wp-element para React
+            plugins_url('dist/bundle.js', plugin_dir_path(__FILE__)), // Ruta al archivo bundle.js
+            ['wp-element'], // Dependencias de WordPress, incluyendo wp-element para React
             null,
-            true
+            true // Cargar en el pie del documento
         );
-
+    
+        // Localizar el script con datos necesarios
         wp_localize_script('my-react-app', 'appLocalizer', [
             'apiUrl' => esc_url(rest_url('wprk/v1')), // URL para tu API REST
             'nonce' => wp_create_nonce('wp_rest'), // Nonce para autenticación en la API

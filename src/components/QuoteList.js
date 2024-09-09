@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import generatePdf from './generatePdf'; // Verifica que este archivo y función existan
 import PDFPreview from './PDFPreview'; // Verifica que este archivo y componente existan
-
 const QuoteList = () => {
     const [quotes, setQuotes] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -12,7 +11,7 @@ const QuoteList = () => {
     const [visibleCount, setVisibleCount] = useState(10);
     const [showPreview, setShowPreview] = useState(false);
     const [pdfUrl, setPdfUrl] = useState('');
-    const url = `${appLocalizer.apiUrl}/wprk/v1/get-quotes`; // Verifica que appLocalizer esté definido
+    const url = `${appLocalizer.apiUrl}/get-quotes`; // Verifica que appLocalizer esté definido
 
     const handlePreviewClick = async () => {
         try {
@@ -81,11 +80,12 @@ const QuoteList = () => {
 
     return (
         <div className="quote-list-section">
-            <h2>Cotizaciones</h2>
+            
+
             <div className="search-bar">
                 <input 
                     type="text" 
-                    placeholder="Buscar cotizaciones..." 
+                    placeholder="Filtrar cotizaciones..." 
                     value={searchTerm}
                     onChange={handleSearch}
                 />

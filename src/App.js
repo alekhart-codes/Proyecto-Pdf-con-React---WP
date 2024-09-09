@@ -1,24 +1,22 @@
 import React from 'react';
-import { Routes, Route, NavLink } from 'react-router-dom';
-import Base from './components/Base';
-import NavBar from './components/NavBar';
-import { Footer } from './components/Footer';
-//import Home from './components/Home'; // Asegúrate de tener este componente si lo necesitas
-//import About from './components/About'; // Asegúrate de tener este componente si lo necesitas
+import { Routes, Route } from 'react-router-dom';
+import Base from './components/Base'; // Verifica la ruta y el nombre del componente
+import NavBar from './components/NavBar'; // Verifica la ruta y el nombre del componente
+import Footer from './components/Footer'; // Verifica la ruta y el nombre del componente
+import AddQuote from './components/AddQuote'; // Verifica la ruta y el nombre del componente
+
 
 const App = () => (
     <>
-        <NavBar /> {/* Asegúrate de tener este componente */}
-        <nav>
-            <NavLink to="/" end>Home</NavLink>
-            <NavLink to="/about">About</NavLink>
-        </nav>
-        <Routes>
-            <Route index element={<Base />} />
-            <Route path="*" element={<p>There's nothing here: 404!</p>} />
-        </Routes>
-        <Footer /> {/* Asegúrate de tener este componente */}
-    </>
+    <NavBar />
+    <Routes>
+        <Route path="/" element={<Base />} />
+        <Route path="/AddQuote" element={<AddQuote />} />
+        <Route path="*" element={<p>There's nothing here: 404!</p>} />
+    </Routes>
+    <Footer />
+</>
 );
 
 export default App;
+
