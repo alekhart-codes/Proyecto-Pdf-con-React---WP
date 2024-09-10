@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Cotizaciones PDF
+ * Plugin Name: Cotizador PDF
  * Author: Victor Molina
  * Author URI: https://github.com/VitokoMp
- * Version: 1.1.5
+ * Version: 1.1.6
  * Description: WordPress React pdf cotizacion.
  * Text-Domain: wp-react-pdf-cotizacion 
  */
@@ -95,6 +95,14 @@ class WPRK_Plugin {
         'callback' => [$this, 'update_quote'],
         'permission_callback' => [$this, 'update_quote_permission']
     ]);
+
+        // Ruta para obtener una cotización por ID
+    register_rest_route('wprk/v1', '/get-quote/(?P<id>\d+)', [
+        'methods' => 'GET',
+        'callback' => [$this, 'get_quote_by_id'],
+        'permission_callback' => '__return_true',
+    ]);
+
     }
 
     public function get_quotes() {
@@ -262,6 +270,46 @@ class WPRK_Plugin {
             return false;
         }
     }
+
+    public function get_quote_by_id($data) {
+        $id = intval($data['id']);
+        
+        // Verificar si el ID es válido
+        if (!$id) {
+            return new WP_Error('invalid_id', 'ID inválido', ['status' => 400]);
+        }
+    
+        // Obtener el post
+        $quote = get_post($id);
+    
+        // Verificar si la cotización existe
+        if (!$quote) {
+            return new WP_Error('no_quote', 'Cotización no encontrada', ['status' => 404]);
+        }
+    
+        // Obtener los metadatos
+        $meta = get_post_meta($id);
+        $items_json = $meta['_items'][0] ?? '';
+    
+        // Decodificar JSON
+        $items = $items_json ? json_decode($items_json, true) : [];
+    
+        // Preparar la respuesta
+        $response = [
+            'id' => $id,
+            'title' => $quote->post_title,
+            'nro_orden' => $meta['_nro_orden'][0] ?? '',
+            'nro_de_cotizacion' => $meta['_nro_de_cotizacion'][0] ?? '',
+            'nro_de_factura' => $meta['_nro_de_factura'][0] ?? '',
+            'fecha' => $meta['_fecha'][0] ?? '',
+            'estado' => $meta['_estado'][0] ?? '',
+            'items' => $items,
+            'nota' => $meta['_nota'][0] ?? '',
+        ];
+    
+        return rest_ensure_response($response);
+    }
+    
     
 }
 

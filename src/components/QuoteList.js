@@ -126,7 +126,7 @@ const QuoteList = () => {
 
     return (
         <div className="quote-list-section">
-            <br></br>
+            
             <div className="search-bar" autoFocus>
                 <input 
                     type="text" 

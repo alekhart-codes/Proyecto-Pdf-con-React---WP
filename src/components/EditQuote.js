@@ -25,7 +25,7 @@ const EditQuote = ({ quoteId, onClose }) => {
 
     useEffect(() => {
         if (quoteId) {
-            axios.get(`${appLocalizer.apiUrl}/quotes/${quoteId}`)
+            axios.get(`${appLocalizer.apiUrl}/get-quote/${quoteId}`)
                 .then(res => {
                     setFormData(res.data);
                 })
@@ -96,6 +96,9 @@ const EditQuote = ({ quoteId, onClose }) => {
     };
 
     return (
+
+ 
+        <div className="modal-container">
         <Modal isOpen={!!quoteId} onClose={onClose}>
             <form onSubmit={handleSubmit}>
                 <div className="form-row">
@@ -239,6 +242,7 @@ const EditQuote = ({ quoteId, onClose }) => {
                 <button type="submit">Actualizar</button>
             </form>
         </Modal>
+        </div>
     );
 };
 
