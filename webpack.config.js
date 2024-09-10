@@ -28,6 +28,10 @@ module.exports = {
           },
         },
       },
+      {
+        test: /\.(png|jpe?g|gif|svg)$/i, // Añade manejo de imágenes
+        type: 'asset/resource',
+      },
     ],
   },
   resolve: {

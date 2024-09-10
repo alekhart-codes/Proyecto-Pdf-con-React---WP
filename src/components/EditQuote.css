@@ -1,0 +1,42 @@
+/* EditQuote.css */
+
+
+.form-row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.form-column {
+    flex: 1;
+    margin-right: 10px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.item-group {
+    margin-bottom: 15px;
+}
+
+.error {
+    color: red;
+    font-size: 0.875rem;
+}
+
+button {
+    background-color: #0073aa;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+button:hover {
+    background-color: #005177;
+}

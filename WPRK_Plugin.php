@@ -82,6 +82,19 @@ class WPRK_Plugin {
             'callback' => [$this, 'get_quotes'],
             'permission_callback' => '__return_true'
         ]);
+        //Ruta para actualizar el estado 
+        register_rest_route('wprk/v1', '/update-quote-state', [
+            'methods' => 'POST',
+            'callback' => [$this, 'update_quote_state'],
+            'permission_callback' => [$this, 'update_quote_state_permission']
+        ]);
+
+        // Ruta para actualizar una cotización
+    register_rest_route('wprk/v1', '/update-quote', [
+        'methods' => 'POST',
+        'callback' => [$this, 'update_quote'],
+        'permission_callback' => [$this, 'update_quote_permission']
+    ]);
     }
 
     public function get_quotes() {
@@ -174,6 +187,71 @@ class WPRK_Plugin {
         ];
     
         return rest_ensure_response($response);
+    }
+    public function update_quote_state($req) {
+        $id = intval($req['id']);
+        $estado = sanitize_text_field($req['estado']);
+    
+        if (!$id || !$estado) {
+            return rest_ensure_response([
+                'status' => 'error',
+                'message' => 'ID de cotización o estado inválido.',
+            ]);
+        }
+    
+        // Actualizar el meta campo de estado
+        update_post_meta($id, '_estado', $estado);
+    
+        return rest_ensure_response([
+            'status' => 'success',
+            'message' => 'Estado actualizado correctamente.',
+        ]);
+    }
+    
+    //validacion del nivel de usuario
+    public function update_quote_state_permission() {
+        return current_user_can('publish_posts');
+    }
+
+    public function update_quote($req) {
+        $id = intval($req['id']);
+        $nro_orden = sanitize_text_field($req['nro_orden']);
+        $nro_de_factura = sanitize_text_field($req['nro_de_factura']);
+        $fecha = sanitize_text_field($req['fecha']);
+        $cliente = sanitize_text_field($req['cliente']);
+        $estado = sanitize_text_field($req['estado']);
+        $items = json_encode($req['items']);
+        $nota = sanitize_textarea_field($req['nota']);
+    
+        if (!$id || !$cliente) {
+            return rest_ensure_response([
+                'status' => 'error',
+                'message' => 'ID de cotización o cliente inválido.',
+            ]);
+        }
+    
+        // Actualizar el post y los campos meta
+        $post_data = [
+            'ID' => $id,
+            'post_title' => $cliente,
+        ];
+        wp_update_post($post_data);
+    
+        update_post_meta($id, '_nro_orden', $nro_orden);
+        update_post_meta($id, '_nro_de_factura', $nro_de_factura);
+        update_post_meta($id, '_fecha', $fecha);
+        update_post_meta($id, '_estado', $estado);
+        update_post_meta($id, '_items', $items);
+        update_post_meta($id, '_nota', $nota);
+    
+        return rest_ensure_response([
+            'status' => 'success',
+            'message' => 'Cotización actualizada correctamente.',
+        ]);
+    }
+    
+    public function update_quote_permission() {
+        return current_user_can('publish_posts');
     }
     
     public function add_quote_permission() {

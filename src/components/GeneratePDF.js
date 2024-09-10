@@ -1,7 +1,6 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import headerImg from '../header.png';
 
-
 const generatePdf = async (quote) => {
     try {
         // Crear un nuevo documento PDF
@@ -19,11 +18,11 @@ const generatePdf = async (quote) => {
         const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
 
         // Agregar imagen
-        const imageWidth = 150;
-        const imageHeight = 150;
+        const imageWidth = 480;
+        const imageHeight = 100;
         page.drawImage(image, {
             x: width - imageWidth - 50, // Ajusta la posición de la imagen
-            y: height - imageHeight - 50,
+            y: height - imageHeight - 0,
             width: imageWidth,
             height: imageHeight,
         });
@@ -54,23 +53,23 @@ const generatePdf = async (quote) => {
         const productos = quote.items; // Asegúrate de que 'items' contenga la lista de productos
         
         // Define table dimensions
-        const tableStartY = yPosition - 20;
+        const tableStartY = yPosition ; // Sube la tabla al ajustar este valor
         const rowHeight = 20;
-        const columnWidths = [50, 250, 80, 100, 100]; // Ajusta según el contenido
+        const columnWidths = [25, 275, 65, 65, 65]; // Ajusta según el contenido
 
-        // Draw table header
-        page.drawText('Item', { x: 50, y: tableStartY, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-        page.drawText('Producto', { x: 80, y: tableStartY, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-        page.drawText('Cant.', { x: 330, y: tableStartY, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-        page.drawText('Precio Unit.', { x: 370, y: tableStartY, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-        page.drawText('Precio', { x: 460, y: tableStartY, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+        // Dibujar encabezado de la tabla
+        page.drawText('Item', { x: 50, y: tableStartY - 10, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+        page.drawText('Producto', { x: 80, y: tableStartY - 10, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+        page.drawText('Cant.', { x: 350, y: tableStartY - 10, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+        page.drawText('Precio Unit.', { x: 410, y: tableStartY- 10, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+        page.drawText('Precio', { x: 470, y: tableStartY - 10, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
 
-        // Draw table lines
+        // Dibujar líneas de la tabla
         const tableWidth = columnWidths.reduce((a, b) => a + b, 0);
         page.drawRectangle({ x: 50, y: tableStartY - rowHeight, width: tableWidth, height: rowHeight, borderColor: rgb(0, 0, 0), borderWidth: 1 });
         page.drawRectangle({ x: 50, y: tableStartY - rowHeight - rowHeight * (productos.length + 1), width: tableWidth, height: rowHeight * (productos.length + 1), borderColor: rgb(0, 0, 0), borderWidth: 1 });
         
-        // Draw vertical lines
+        // Dibujar líneas verticales
         let xPos = 50;
         for (let i = 0; i < columnWidths.length - 1; i++) {
             xPos += columnWidths[i];
@@ -89,7 +88,7 @@ const generatePdf = async (quote) => {
         });
 
         // Espacio antes del resumen final
-        yPosition = tableStartY - rowHeight * (productos.length + 2) - 20;
+        yPosition = tableStartY - rowHeight * (productos.length + 2) - 60;
 
         // Calcular y mostrar Neto, IVA y Total
         page.drawText(`Neto: $${Number(quote.neto).toLocaleString()}`, {

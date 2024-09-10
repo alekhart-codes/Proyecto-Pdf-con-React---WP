@@ -120,6 +120,17 @@ const QuoteList = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    const handleSearch = (e) => {
+        setSearchTerm(e.target.value);
+        const filteredQuotes = quotes.filter(quote => 
+            quote.title.toLowerCase().includes(e.target.value.toLowerCase()) || 
+            quote.nro_de_cotizacion.toString().includes(e.target.value) ||
+            quote.nro_orden.toString().includes(e.target.value) ||
+            quote.nro_de_factura.toString().includes(e.target.value)
+        );
+        setDisplayedQuotes(filteredQuotes.slice(0, visibleCount));
+    };
+
 
     if (loading) return <p>Cargando cotizaciones...</p>;
     if (error) return <p>{error}</p>;
