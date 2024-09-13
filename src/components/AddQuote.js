@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import Modal from './Modal'; // Asegúrate de que la ruta sea correcta
-import './EditQuote.css';
+import './AddQuote.css';
 
-const EditQuote = ({ quoteId, onClose }) => {
+const AddQuote = () => {
+    const IVA_PERCENTAGE = 19; // Definimos el porcentaje de IVA
+
     const [formData, setFormData] = useState({
         nro_orden: '',
         nro_de_cotizacion: '',
@@ -15,24 +16,17 @@ const EditQuote = ({ quoteId, onClose }) => {
             producto: '',
             cantidad: '',
             precio_unitario: '',
-            precio: ''
+            precio_total_sin_iva: '',
+            iva_total: '',
+            total_mas_iva: ''
         }],
         nota: ''
     });
 
+    const [message, setMessage] = useState('');
     const [errors, setErrors] = useState({});
 
-    useEffect(() => {
-        if (quoteId) {
-            axios.get(`${appLocalizer.apiUrl}/get-quote/${quoteId}`)
-                .then(res => {
-                    setFormData(res.data);
-                })
-                .catch(error => {
-                    console.error('Error al obtener los datos:', error);
-                });
-        }
-    }, [quoteId]);
+    const url = `${appLocalizer.apiUrl}/add-quote`; // URL corregida
 
     const handleFormChange = (e) => {
         const { name, value } = e.target;
@@ -44,35 +38,83 @@ const EditQuote = ({ quoteId, onClose }) => {
         const newItems = formData.items.map((item, i) => (
             i === index ? { ...item, [name]: value } : item
         ));
-        setFormData({ ...formData, items: newItems });
+
+        // Recalculamos el precio total de cada producto al cambiar cualquier campo
+        const updatedItems = newItems.map(item => {
+            const cantidad = parseFloat(item.cantidad) || 0;
+            const precioUnitario = parseFloat(item.precio_unitario) || 0;
+            const precioTotalSinIva = cantidad * precioUnitario;
+            const ivaTotal = precioTotalSinIva * (IVA_PERCENTAGE / 100);
+            const totalMasIva = precioTotalSinIva + ivaTotal;
+
+            return { 
+                ...item, 
+                precio_total_sin_iva: precioTotalSinIva.toFixed(2),
+                iva_total: ivaTotal.toFixed(2),
+                total_mas_iva: totalMasIva.toFixed(2),
+                precio: totalMasIva.toFixed(2) // Precio total con IVA
+            };
+        });
+
+        // Actualiza el estado con los ítems recalculados
+        setFormData({ ...formData, items: updatedItems });
     };
 
     const addNewItem = () => {
         setFormData({
             ...formData,
-            items: [...formData.items, { producto: '', cantidad: '', precio_unitario: '', precio: '' }]
+            items: [...formData.items, { 
+                producto: '', 
+                cantidad: '', 
+                precio_unitario: '', 
+                precio_total_sin_iva: '', 
+                iva_total: '', 
+                total_mas_iva: '' 
+            }]
         });
     };
+
+    const removeItem = (index) => {
+        // Confirmar la eliminación
+        if (window.confirm('¿Estás seguro de que deseas eliminar esta línea?')) {
+            // Solo eliminamos si hay más de una fila en la lista
+            if (formData.items.length > 0) {
+                setFormData({
+                    ...formData,
+                    items: formData.items.filter((_, i) => i !== index)
+                });
+            }
+        }
+    };
+    
 
     const validateForm = () => {
         const newErrors = {};
         if (!formData.nro_orden) newErrors.nro_orden = 'Nro. de Orden es obligatorio';
         if (!formData.fecha) newErrors.fecha = 'Fecha es obligatoria';
         if (!formData.cliente) newErrors.cliente = 'Cliente es obligatorio';
-        if (formData.items.some(item => !item.producto || !item.cantidad || !item.precio_unitario || !item.precio)) {
+        if (formData.items.some(item => !item.producto || !item.cantidad || !item.precio_unitario || !item.precio_total_sin_iva || !item.iva_total || !item.total_mas_iva)) {
             newErrors.items = 'Todos los campos de los productos son obligatorios';
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
+    const calculateTotals = () => {
+        const totalSinIva = formData.items.reduce((sum, item) => sum + parseFloat(item.precio_total_sin_iva || 0), 0);
+        const totalIva = formData.items.reduce((sum, item) => sum + parseFloat(item.iva_total || 0), 0);
+        const totalConIva = formData.items.reduce((sum, item) => sum + parseFloat(item.total_mas_iva || 0), 0);
+
+        return { totalSinIva, totalIva, totalConIva };
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
         if (!validateForm()) return;
-
-        axios.put(
-            `${appLocalizer.apiUrl}/quotes/${quoteId}`,
+        
+        axios.post(
+            `${appLocalizer.apiUrl}/add-quote`, 
             formData,
             {
                 headers: {
@@ -83,19 +125,66 @@ const EditQuote = ({ quoteId, onClose }) => {
         )
         .then(response => {
             if (response.data.status === 'success') {
-                console.log('Cotización actualizada con éxito:', response.data);
-                onClose(); // Cierra el modal después de guardar
+                setMessage('Cotización enviada con éxito');
+                setFormData({
+                    nro_orden: '',
+                    nro_de_cotizacion: '',
+                    nro_de_factura: '',
+                    fecha: '',
+                    cliente: '',
+                    estado: '',
+                    items: [{ 
+                        producto: '', 
+                        cantidad: '', 
+                        precio_unitario: '', 
+                        precio_total_sin_iva: '', 
+                        iva_total: '', 
+                        total_mas_iva: '' 
+                    }],
+                    nota: ''
+                });
             } else {
-                console.error('Error al actualizar la cotización:', response.data.message);
+                console.error('Error al guardar la cotización:', response.data.message);
+                setMessage('Hubo un problema al enviar la cotización');
             }
         })
         .catch(error => {
             console.error('Error al conectar con la API:', error);
+            setMessage('Error al conectar con la API');
         });
     };
 
+    useEffect(() => {
+        axios.get(url)
+            .then((res) => {
+                const data = res.data;
+                setFormData({
+                    nro_orden: data.nro_orden,
+                    nro_de_cotizacion: data.nro_de_cotizacion,
+                    nro_de_factura: data.nro_de_factura,
+                    fecha: data.fecha,
+                    cliente: data.cliente,
+                    estado: data.estado,
+                    items: data.items || [{ 
+                        producto: '', 
+                        cantidad: '', 
+                        precio_unitario: '', 
+                        precio_total_sin_iva: '', 
+                        iva_total: '', 
+                        total_mas_iva: '' 
+                    }],
+                    nota: data.nota
+                });
+            })
+            .catch(error => {
+                console.error("Error al obtener los datos: ", error);
+            });
+    }, [url]);
+
+    const { totalSinIva, totalIva, totalConIva } = calculateTotals();
+
     return (
-        <Modal isOpen={!!quoteId} onClose={onClose}>
+        <div className="form-container">
             <form onSubmit={handleSubmit}>
                 <div className="form-row">
                     <div className="form-column">
@@ -176,52 +265,58 @@ const EditQuote = ({ quoteId, onClose }) => {
                     </div>
                 </div>
 
-                <div className="full-width">
+                <div className="items-section">
                     {formData.items.map((item, index) => (
-                        <div key={index} className="form-group item-group">
-                            <div className="form-group">
-                                <label htmlFor={`producto_${index}`}>Producto</label>
-                                <textarea
-                                    id={`producto_${index}`}
-                                    name="producto"
-                                    value={item.producto}
-                                    onChange={(e) => handleItemChange(index, e)}
-                                />
+                        <div key={index} className="item-row">
+                            <div className="item-col product-col">
+                                <div className="form-group">
+                                    <label htmlFor={`producto_${index}`}>Producto</label>
+                                    <textarea
+                                        id={`producto_${index}`}
+                                        name="producto"
+                                        value={item.producto}
+                                        onChange={(e) => handleItemChange(index, e)}
+                                    />
+                                </div>
                             </div>
-                            <div className="form-group">
-                                <label htmlFor={`cantidad_${index}`}>Cantidad</label>
-                                <input
-                                    type="text"
-                                    id={`cantidad_${index}`}
-                                    name="cantidad"
-                                    value={item.cantidad}
-                                    onChange={(e) => handleItemChange(index, e)}
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor={`precio_unitario_${index}`}>Precio Unitario</label>
-                                <input
-                                    type="number"
-                                    id={`precio_unitario_${index}`}
-                                    name="precio_unitario"
-                                    value={item.precio_unitario}
-                                    onChange={(e) => handleItemChange(index, e)}
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor={`precio_${index}`}>Precio</label>
-                                <input
-                                    type="number"
-                                    id={`precio_${index}`}
-                                    name="precio"
-                                    value={item.precio}
-                                    onChange={(e) => handleItemChange(index, e)}
-                                />
+                            <div className="item-col other-cols">
+                                <div className="form-group">
+                                    <label htmlFor={`cantidad_${index}`}>Cantidad</label>
+                                    <input
+                                        type="text"
+                                        id={`cantidad_${index}`}
+                                        name="cantidad"
+                                        value={item.cantidad}
+                                        onChange={(e) => handleItemChange(index, e)}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor={`precio_unitario_${index}`}>Precio Unitario</label>
+                                    <input
+                                        type="number"
+                                        id={`precio_unitario_${index}`}
+                                        name="precio_unitario"
+                                        value={item.precio_unitario}
+                                        onChange={(e) => handleItemChange(index, e)}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor={`precio_${index}`}>Precio + IVA</label>
+                                    <input
+                                        type="number"
+                                        id={`precio_${index}`}
+                                        name="precio"
+                                        value={item.precio}
+                                        readOnly
+                                    />
+                                </div>
+                                {item.producto && (
+                                    <button type="button" onClick={() => removeItem(index)}>Eliminar Línea</button>
+                                )}
                             </div>
                             {errors.items && <p className="error">{errors.items}</p>}
                         </div>
                     ))}
-
                     <button type="button" onClick={addNewItem}>Añadir Línea</button>
 
                     <div className="form-group">
@@ -235,10 +330,18 @@ const EditQuote = ({ quoteId, onClose }) => {
                     </div>
                 </div>
 
-                <button type="submit">Actualizar</button>
+                <div className="totals">
+                    <div>Total Sin IVA: {totalSinIva.toFixed(2)}</div>
+                    <div>IVA ({IVA_PERCENTAGE}%): {totalIva.toFixed(2)}</div>
+                    <div>Total con IVA: {totalConIva.toFixed(2)}</div>
+                </div>
+                
+                {message && <p className="confirmation-message">{message}</p>}
+
+                <button type="submit">Guardar</button>
             </form>
-        </Modal>
+        </div>
     );
 };
 
-export default EditQuote;
+export default AddQuote;

@@ -1,6 +1,6 @@
 {
   "name": "wp-react-pdf-cotizacion",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "main": "index.js",
   "dependencies": {
     "axios": "^1.7.7",
