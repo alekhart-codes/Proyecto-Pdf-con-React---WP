@@ -1,0 +1,106 @@
+/* EditQuote.css */
+
+/* Contenedor del modal */
+.modal-container {
+    position: relative; /* Asegura que el modal se posicione en relación a este contenedor */
+    width: 100%;
+    height: 100vh; /* O el tamaño que necesites */
+}
+
+/* Estilo para el modal */
+.modal {
+    position: absolute;
+    top: 10%; /* Mueve el modal hacia abajo en la pantalla */
+    left: 50%;
+    transform: translate(-50%, 0); /* Centra horizontalmente el modal */
+    width: 80%; /* Ajusta el ancho del modal */
+    max-width: 900px; /* Ancho máximo del modal */
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    padding: 15px;
+    box-sizing: border-box;
+    z-index: 1000; /* Asegúrate de que el modal esté encima de otros elementos */
+}
+
+/* Estilo para el contenido del modal */
+.modal-content {
+    font-size: 0.9rem; /* Reduce el tamaño del texto */
+}
+
+/* Estilo para los inputs y textareas dentro del modal */
+.modal input, .modal textarea {
+    font-size: 0.9rem; /* Reduce el tamaño del texto dentro de los campos */
+    padding: 8px; /* Ajusta el padding */
+    border: 1px solid #ccc; /* Borde de los campos */
+    border-radius: 4px; /* Bordes redondeados */
+    width: calc(100% - 16px); /* Ajusta el ancho de los campos */
+    margin-bottom: 10px; /* Espacio entre los campos */
+}
+
+/* Estilo para los textareas específicos */
+.modal textarea {
+    resize: vertical; /* Permite que los textareas se redimensionen verticalmente */
+    min-height: 80px; /* Altura mínima para los textareas */
+}
+
+/* Estilo para los inputs numéricos */
+.modal input[type="number"] {
+    width: calc(100% - 16px); /* Ajusta el ancho de los campos numéricos */
+}
+
+/* Estilo para los botones dentro del modal */
+.button-add-line {
+    font-size: 0.9rem; /* Reduce el tamaño del texto del botón */
+    padding: 8px 16px; /* Ajusta el padding del botón */
+    margin-top: 10px; /* Espacio superior para separar del contenido */
+    background-color: #007bff; /* Color de fondo del botón */
+    color: white; /* Color del texto del botón */
+    border: none; /* Sin borde */
+    border-radius: 4px; /* Bordes redondeados */
+    cursor: pointer; /* Cursor de puntero al pasar sobre el botón */
+}
+
+/* Estilo para el botón de añadir línea cuando está deshabilitado */
+.button-add-line:disabled {
+    background-color: #ccc; /* Color de fondo cuando está deshabilitado */
+    cursor: not-allowed; /* Cursor cuando está deshabilitado */
+}
+
+/* Estilo para el botón de actualizar */
+button[type="submit"] {
+    font-size: 0.9rem; /* Reduce el tamaño del texto del botón */
+    padding: 10px 20px; /* Ajusta el padding del botón */
+    margin-top: 20px; /* Espacio superior para separar del contenido */
+    background-color: #007bff; /* Color de fondo del botón */
+    color: white; /* Color del texto del botón */
+    border: none; /* Sin borde */
+    border-radius: 4px; /* Bordes redondeados */
+    cursor: pointer; /* Cursor de puntero al pasar sobre el botón */
+}
+
+/* Agrupación y disposición de los grupos de formulario */
+.form-group {
+    margin-bottom: 15px; /* Espacio inferior para separar los grupos */
+}
+
+/* Agrupación de los grupos de formulario en una fila */
+.form-row {
+    display: flex;
+    flex-wrap: wrap; /* Permite que los elementos se ajusten en varias líneas */
+    gap: 15px; /* Espacio entre columnas */
+}
+
+/* Columnas en la fila del formulario */
+.form-column {
+    flex: 1;
+    min-width: 200px; /* Ancho mínimo para cada columna */
+}
+
+/* Agrupación de las líneas de productos */
+.item-group {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 15px; /* Espacio inferior para separar las líneas de productos */
+}
