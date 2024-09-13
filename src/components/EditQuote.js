@@ -4,6 +4,8 @@ import Modal from './Modal';
 import './EditQuote.css';
 import Quote from './Quote';
 
+
+
 const EditQuote = ({ quoteId, onClose }) => {
     const [formData, setFormData] = useState({
         nro_orden: '',
@@ -16,7 +18,10 @@ const EditQuote = ({ quoteId, onClose }) => {
             producto: '',
             cantidad: '',
             precio_unitario: '',
-            precio: ''
+            precio: '',
+            precio_total_sin_iva: '',
+            iva_total: '',
+            total_mas_iva: ''
         }],
         nota: ''
     });
@@ -29,6 +34,7 @@ const EditQuote = ({ quoteId, onClose }) => {
         if (quoteId) {
             axios.get(`${appLocalizer.apiUrl}/get-quote/${quoteId}`)
                 .then(res => {
+                    console.log('Datos de la cotización:', res.data); // Añade esta línea
                     setFormData(res.data);
                 })
                 .catch(error => {
@@ -57,10 +63,17 @@ const EditQuote = ({ quoteId, onClose }) => {
         });
     };
 
-    const removeItem = (index) => {
-        const newItems = formData.items.filter((_, i) => i !== index);
-        setFormData({ ...formData, items: newItems });
-    };
+    const removeItem = (index) => {        // Confirmar la eliminación
+        if (window.confirm('¿Estás seguro de que deseas eliminar esta línea?')) {
+            // Solo eliminamos si hay más de una fila en la lista
+            if (formData.items.length > 0) {
+                setFormData({
+                    ...formData,
+                    items: formData.items.filter((_, i) => i !== index)
+                });
+            }
+        }
+};
 
     const validateForm = () => {
         const newErrors = {};
@@ -83,9 +96,13 @@ const EditQuote = ({ quoteId, onClose }) => {
             totalSinIva: formData.items.reduce((total, item) => total + parseFloat(item.precio_unitario * item.cantidad || 0), 0),
             totalIva: formData.items.reduce((total, item) => total + parseFloat(item.precio_unitario * item.cantidad * IVA_PERCENTAGE / 100 || 0), 0),
             totalConIva: formData.items.reduce((total, item) => total + parseFloat(item.precio_unitario * item.cantidad * (1 + IVA_PERCENTAGE / 100) || 0), 0),
-        };
+        };0
 
-        axios.post(`${appLocalizer.apiUrl}/update-quote/${quoteId}`, updatedQuote)
+        axios.post(`${appLocalizer.apiUrl}/update-quote/${quoteId}`, updatedQuote,
+            {headers: {
+                'content-type' : 'application/json',
+                'X-WP-NONCE': appLocalizer.nonce
+            }})
             .then(() => {
                 setMessage('Cotización actualizada con éxito');
             })

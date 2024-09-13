@@ -90,11 +90,13 @@ class WPRK_Plugin {
         ]);
 
         // Ruta para actualizar una cotización
-    register_rest_route('wprk/v1', '/update-quote', [
+
+    register_rest_route('wprk/v1', '/update-quote/(?P<id>\d+)', [
         'methods' => 'POST',
         'callback' => [$this, 'update_quote'],
-        'permission_callback' => [$this, 'update_quote_permission']
+        'permission_callback' => [$this, 'update_quote_permission'],
     ]);
+    
 
         // Ruta para obtener una cotización por ID
     register_rest_route('wprk/v1', '/get-quote/(?P<id>\d+)', [
@@ -297,7 +299,7 @@ class WPRK_Plugin {
         // Preparar la respuesta
         $response = [
             'id' => $id,
-            'title' => $quote->post_title,
+            'cliente' => $quote->post_title,
             'nro_orden' => $meta['_nro_orden'][0] ?? '',
             'nro_de_cotizacion' => $meta['_nro_de_cotizacion'][0] ?? '',
             'nro_de_factura' => $meta['_nro_de_factura'][0] ?? '',
