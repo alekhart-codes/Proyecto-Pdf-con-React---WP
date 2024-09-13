@@ -60,9 +60,9 @@ const generatePdf = async (quote) => {
         // Dibujar encabezado de la tabla
         page.drawText('Item', { x: 50, y: tableStartY - 10, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
         page.drawText('Producto', { x: 80, y: tableStartY - 10, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-        page.drawText('Cant.', { x: 350, y: tableStartY - 10, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-        page.drawText('Precio Unit.', { x: 410, y: tableStartY- 10, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-        page.drawText('Precio', { x: 470, y: tableStartY - 10, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+        page.drawText('Cant.', { x: 352, y: tableStartY - 10, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+        page.drawText('Precio Unit.', { x: 412, y: tableStartY- 10, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+        page.drawText('Total + iva', { x: 475, y: tableStartY - 10, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
 
         // Dibujar líneas de la tabla
         const tableWidth = columnWidths.reduce((a, b) => a + b, 0);
@@ -82,17 +82,17 @@ const generatePdf = async (quote) => {
 
             page.drawText(`${index + 1}`, { x: 50, y: rowY, size: 10, font: timesRomanFont, color: rgb(0, 0, 0) });
             page.drawText(`${prod.producto}`, { x: 80, y: rowY, size: 10, font: timesRomanFont, color: rgb(0, 0, 0), maxWidth: columnWidths[1] });
-            page.drawText(`${prod.cantidad}`, { x: 330, y: rowY, size: 10, font: timesRomanFont, color: rgb(0, 0, 0) });
-            page.drawText(`$${Number(prod.precio_unitario).toLocaleString()}`, { x: 370, y: rowY, size: 10, font: timesRomanFont, color: rgb(0, 0, 0) });
-            page.drawText(`$${Number(prod.precio).toLocaleString()}`, { x: 460, y: rowY, size: 10, font: timesRomanFont, color: rgb(0, 0, 0) });
+            page.drawText(`${prod.cantidad}`, { x: 352, y: rowY, size: 10, font: timesRomanFont, color: rgb(0, 0, 0) });
+            page.drawText(`$${Number(prod.precio_unitario).toLocaleString()}`, { x: 412, y: rowY, size: 10, font: timesRomanFont, color: rgb(0, 0, 0) });
+            page.drawText(`$${Number(prod.precio).toLocaleString()}`, { x: 475, y: rowY, size: 10, font: timesRomanFont, color: rgb(0, 0, 0) });
         });
 
         // Espacio antes del resumen final
-        yPosition = tableStartY - rowHeight * (productos.length + 2) - 60;
+        yPosition = tableStartY - rowHeight * (productos.length + 2) - 150;
 
         // Calcular y mostrar Neto, IVA y Total
         page.drawText(`Neto: $${Number(quote.neto).toLocaleString()}`, {
-            x: 50,
+            x: 150,
             y: yPosition,
             size: 15,
             font: timesRomanFont,
@@ -101,7 +101,7 @@ const generatePdf = async (quote) => {
         yPosition -= 20;
 
         page.drawText(`IVA (19%): $${Number(quote.iva).toLocaleString()}`, {
-            x: 50,
+            x: 150,
             y: yPosition,
             size: 15,
             font: timesRomanFont,
@@ -110,7 +110,7 @@ const generatePdf = async (quote) => {
         yPosition -= 20;
 
         page.drawText(`Total: $${Number(quote.total).toLocaleString()}`, {
-            x: 50,
+            x: 150,
             y: yPosition,
             size: 15,
             font: timesRomanFont,

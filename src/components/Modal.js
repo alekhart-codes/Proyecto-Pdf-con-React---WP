@@ -1,9 +1,18 @@
 // Modal.js
-import React from 'react';
+import React, { useEffect } from 'react';
 import './Modal.css'; // Asegúrate de crear este archivo CSS para el estilo del modal
 
 const Modal = ({ isOpen, onClose, children }) => {
-    if (!isOpen) return null;
+
+    useEffect(() => {
+        if (isOpen){
+            document.body.style.overflow = 'hidden';
+        } 
+        return () => {
+            document.body.style.overflow = 'auto';
+        };
+
+    }, [isOpen]);
 
     return (
         <div className="modal-overlay">

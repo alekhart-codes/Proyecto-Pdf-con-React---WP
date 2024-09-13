@@ -75,3 +75,36 @@ button:hover {
     font-size: 14px;
     margin-top: 5px;
 }
+
+.totals {
+    text-align: right;
+    margin-top: 20px;
+}
+
+/* Item rows styles */
+.item-row {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.item-col {
+    flex: 1;
+}
+
+.product-col {
+    max-width: 60%;
+    margin-right: 10px;
+}
+
+.other-cols {
+    flex: 1;
+}
+
+.item-col textarea,
+.item-col input {
+    width: 100%;
+}
+
+.items-section {
+    margin-top: 20px;
+}

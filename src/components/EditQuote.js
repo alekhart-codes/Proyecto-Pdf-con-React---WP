@@ -191,7 +191,7 @@ const EditQuote = ({ quoteId, onClose }) => {
                                     value={item.producto}
                                     onChange={(e) => handleItemChange(index, e)}
                                 />
-                            </div>
+                            
                             <div className="form-group">
                                 <label htmlFor={`cantidad_${index}`}>Cantidad</label>
                                 <input
@@ -221,6 +221,7 @@ const EditQuote = ({ quoteId, onClose }) => {
                                     value={item.precio}
                                     onChange={(e) => handleItemChange(index, e)}
                                 />
+                            </div>
                             </div>
                             {errors.items && <p className="error">{errors.items}</p>}
                         </div>
