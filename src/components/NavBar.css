@@ -1,11 +1,9 @@
-/* NavBar.css */
-
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 10px 20px;
-    background-color: #2c3e50;
+    background-color: #000080;
     color: #ecf0f1;
   }
   
@@ -35,12 +33,12 @@
   .nav {
     display: flex;
     justify-content: center;
-    background-color: #34495e;
+    background-color: #4169E1;
     padding: 10px 0;
   }
   
   .nav-link {
-    color: #ecf0f1;
+    color: #000080;
     text-decoration: none;
     padding: 10px 20px;
     margin: 0 10px;
@@ -49,11 +47,11 @@
   }
   
   .nav-link:hover {
-    background-color: #1abc9c;
+    background-color: #ADD8E6;
   }
   
   .active-link {
     background-color: #ffffff;
-    color: #000000e7;
+    color: #000080;
   }
   

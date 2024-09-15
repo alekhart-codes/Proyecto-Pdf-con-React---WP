@@ -121,7 +121,9 @@ const Quote = ({
                 />
               </div>
               <div className="form-group">
-                <label htmlFor={`precio_unitario_${index}`}>Precio Unitario</label>
+                <label htmlFor={`precio_unitario_${index}`}>
+                  Precio Unitario
+                </label>
                 <input
                   type="number"
                   id={`precio_unitario_${index}`}
@@ -141,7 +143,11 @@ const Quote = ({
                 />
               </div>
               {item.producto && (
-                <button type="button" onClick={() => removeItem(index)}>
+                <button
+                  type="button"
+                  name="btn-Eliminar-Linea"
+                  onClick={() => removeItem(index)}
+                >
                   Eliminar Línea
                 </button>
               )}
@@ -149,10 +155,11 @@ const Quote = ({
             {errors.items && <p className="error">{errors.items}</p>}
           </div>
         ))}
-        <button type="button" onClick={addNewItem}>
+
+        <button type="button" name="btn-Añadir-Linea" onClick={addNewItem}>
           Añadir Línea
         </button>
-
+        <br></br>
         <div className="form-group">
           <label htmlFor="nota">Nota</label>
           <textarea

@@ -18,8 +18,8 @@
     border-radius: 5px;
     position: relative;
     width: 80%;
-    max-width: 600px;
-    max-height: 80vh; /* Limita la altura máxima del contenido del modal */
+    max-width: 777px;
+    max-height: 75%; /* Limita la altura máxima del contenido del modal */
     overflow-y: auto; /* Permite el desplazamiento vertical dentro del modal */
 }
 
@@ -30,5 +30,12 @@
     border: none;
     background: none;
     font-size: 20px;
+    color: grey; 
     cursor: pointer;
+    transition: color 0.3s ease; /* Transición suave al cambiar el color */
+}
+
+.modal-close:hover {
+    color: black; /* Color negro para la cruz */
+    background-color: lightblue; /* Fondo azul al pasar el cursor */
 }

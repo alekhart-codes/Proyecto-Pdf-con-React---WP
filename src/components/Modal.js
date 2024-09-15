@@ -1,6 +1,5 @@
-// Modal.js
 import React, { useEffect } from 'react';
-import './Modal.css'; // Asegúrate de crear este archivo CSS para el estilo del modal
+import './Modal.css'; 
 
 const Modal = ({ isOpen, onClose, children }) => {
 
