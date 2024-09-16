@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // Importa useNavigate
 import './AddQuote.css';
 
 const AddQuote = () => {
     const IVA_PERCENTAGE = 19; // Definimos el porcentaje de IVA
+    const navigate = useNavigate(); // Inicializa useNavigate
 
     const [formData, setFormData] = useState({
         nro_orden: '',
@@ -26,7 +28,7 @@ const AddQuote = () => {
     const [message, setMessage] = useState('');
     const [errors, setErrors] = useState({});
 
-    const url = `${appLocalizer.apiUrl}/add-quote`; // URL corregida
+    const url = `${appLocalizer.apiUrl}/get-quote-data`; // URL corregida para obtener datos iniciales
 
     const handleFormChange = (e) => {
         const { name, value } = e.target;
@@ -78,15 +80,16 @@ const AddQuote = () => {
         // Confirmar la eliminación
         if (window.confirm('¿Estás seguro de que deseas eliminar esta línea?')) {
             // Solo eliminamos si hay más de una fila en la lista
-            if (formData.items.length > 0) {
+            if (formData.items.length > 1) {
                 setFormData({
                     ...formData,
                     items: formData.items.filter((_, i) => i !== index)
                 });
+            } else {
+                alert('Debes mantener al menos una línea en la lista.');
             }
         }
     };
-    
 
     const validateForm = () => {
         const newErrors = {};
@@ -125,7 +128,10 @@ const AddQuote = () => {
         )
         .then(response => {
             if (response.data.status === 'success') {
-                setMessage('Cotización enviada con éxito');
+                setMessage('Cotización enviada con éxito. Serás redirigido a la lista de cotizaciones.');
+                setTimeout(() => {
+                    navigate('/'); // Redirige a la lista de cotizaciones
+                }, 2000); // Espera 2 segundos antes de redirigir
                 setFormData({
                     nro_orden: '',
                     nro_de_cotizacion: '',
@@ -159,12 +165,12 @@ const AddQuote = () => {
             .then((res) => {
                 const data = res.data;
                 setFormData({
-                    nro_orden: data.nro_orden,
-                    nro_de_cotizacion: data.nro_de_cotizacion,
-                    nro_de_factura: data.nro_de_factura,
-                    fecha: data.fecha,
-                    cliente: data.cliente,
-                    estado: data.estado,
+                    nro_orden: data.nro_orden || '',
+                    nro_de_cotizacion: data.nro_de_cotizacion || '',
+                    nro_de_factura: data.nro_de_factura || '',
+                    fecha: data.fecha || '',
+                    cliente: data.cliente || '',
+                    estado: data.estado || '',
                     items: data.items || [{ 
                         producto: '', 
                         cantidad: '', 
@@ -173,7 +179,7 @@ const AddQuote = () => {
                         iva_total: '', 
                         total_mas_iva: '' 
                     }],
-                    nota: data.nota
+                    nota: data.nota || ''
                 });
             })
             .catch(error => {
@@ -186,7 +192,7 @@ const AddQuote = () => {
     return (
         <div className="form-container">
             <form onSubmit={handleSubmit}>
-                <div className="form-row">
+            <div className="form-row">
                     <div className="form-column">
                         <div className="form-group">
                             <label htmlFor="nro_orden">Nro. de Orden</label>
@@ -301,18 +307,18 @@ const AddQuote = () => {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label htmlFor={`precio_${index}`}>Precio + IVA</label>
+                                    <label htmlFor={`precio_${index}`}>Precio Total</label>
                                     <input
                                         type="number"
                                         id={`precio_${index}`}
                                         name="precio"
-                                        value={item.precio}
+                                        value={item.precio_total_sin_iva}
                                         readOnly
                                     />
                                 </div>
-                                {item.producto && (
+                                
                                     <button type="button" onClick={() => removeItem(index)}>Eliminar Línea</button>
-                                )}
+                                
                             </div>
                             {errors.items && <p className="error">{errors.items}</p>}
                         </div>
@@ -335,13 +341,13 @@ const AddQuote = () => {
                     <div>IVA ({IVA_PERCENTAGE}%): {totalIva.toFixed(2)}</div>
                     <div>Total con IVA: {totalConIva.toFixed(2)}</div>
                 </div>
-                
-                {message && <p className="confirmation-message">{message}</p>}
+                 
 
-                <button type="submit">Guardar</button>
+                {message && <p className="message">{message}</p>}
+                <button type="submit">Guardar Cotización</button>
             </form>
         </div>
     );
 };
 
-export default AddQuote;
+ export default AddQuote;

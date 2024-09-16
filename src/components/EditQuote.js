@@ -16,28 +16,19 @@ const EditQuote = ({ quoteId, onClose }) => {
             producto: '',
             cantidad: '',
             precio_unitario: '',
-            precio: '',
-            precio_total_sin_iva: '',
-            iva_total: '',
-            total_mas_iva: ''
+            precio: ''
         }],
         nota: ''
     });
 
-    const [totals, setTotals] = useState({
-        totalSinIva: 0,
-        totalIva: 0,
-        totalConIva: 0
-    });
-
+    const [errors, setErrors] = useState({});
+    const [message, setMessage] = useState('');
     const IVA_PERCENTAGE = 19; // Porcentaje de IVA en Chile (puedes ajustar)
 
-    // Obtener los datos de la cotización al cargar el componente
     useEffect(() => {
         if (quoteId) {
             axios.get(`${appLocalizer.apiUrl}/get-quote/${quoteId}`)
                 .then(res => {
-                    console.log('Datos de la cotización:', res.data);
                     setFormData(res.data);
                 })
                 .catch(error => {
@@ -46,26 +37,11 @@ const EditQuote = ({ quoteId, onClose }) => {
         }
     }, [quoteId]);
 
-    // Recalcular los totales cada vez que cambien los items
-    useEffect(() => {
-        const totalSinIva = formData.items.reduce((total, item) => total + parseFloat(item.precio_unitario || 0) * parseFloat(item.cantidad || 0), 0);
-        const totalIva = totalSinIva * (IVA_PERCENTAGE / 100);
-        const totalConIva = totalSinIva + totalIva;
-
-        setTotals({
-            totalSinIva,
-            totalIva,
-            totalConIva
-        });
-    }, [formData.items]); // Se recalcula cuando cambian los items
-
-    // Función para manejar los cambios en los inputs del formulario principal
     const handleFormChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
 
-    // Función para manejar los cambios en los items (productos)
     const handleItemChange = (index, e) => {
         const { name, value } = e.target;
         const newItems = formData.items.map((item, i) => (
@@ -82,19 +58,10 @@ const EditQuote = ({ quoteId, onClose }) => {
     };
 
     const removeItem = (index) => {
-        if (window.confirm('¿Estás seguro de que deseas eliminar esta línea?')) {
-            if (formData.items.length > 1) {
-                setFormData({
-                    ...formData,
-                    items: formData.items.filter((_, i) => i !== index)
-                });
-            } else {
-                alert('Debe haber al menos un elemento en la lista.');
-            }
-        }
+        const newItems = formData.items.filter((_, i) => i !== index);
+        setFormData({ ...formData, items: newItems });
     };
 
-    // Validar el formulario antes de enviar
     const validateForm = () => {
         const newErrors = {};
         if (!formData.nro_orden) newErrors.nro_orden = 'Nro. de Orden es obligatorio';
@@ -113,16 +80,12 @@ const EditQuote = ({ quoteId, onClose }) => {
 
         const updatedQuote = {
             ...formData,
-            totalSinIva: totals.totalSinIva,
-            totalIva: totals.totalIva,
-            totalConIva: totals.totalConIva,
+            totalSinIva: formData.items.reduce((total, item) => total + parseFloat(item.precio_unitario * item.cantidad || 0), 0),
+            totalIva: formData.items.reduce((total, item) => total + parseFloat(item.precio_unitario * item.cantidad * IVA_PERCENTAGE / 100 || 0), 0),
+            totalConIva: formData.items.reduce((total, item) => total + parseFloat(item.precio_unitario * item.cantidad * (1 + IVA_PERCENTAGE / 100) || 0), 0),
         };
 
-        axios.post(`${appLocalizer.apiUrl}/update-quote/${quoteId}`, updatedQuote,
-            {headers: {
-                'content-type' : 'application/json',
-                'X-WP-NONCE': appLocalizer.nonce
-            }})
+        axios.post(`${appLocalizer.apiUrl}/update-quote/${quoteId}`, updatedQuote)
             .then(() => {
                 setMessage('Cotización actualizada con éxito');
             })
@@ -141,9 +104,9 @@ const EditQuote = ({ quoteId, onClose }) => {
                 handleItemChange={handleItemChange}
                 addNewItem={addNewItem}
                 removeItem={removeItem}
-                totalSinIva={totals.totalSinIva}
-                totalIva={totals.totalIva}
-                totalConIva={totals.totalConIva}
+                totalSinIva={formData.items.reduce((total, item) => total + parseFloat(item.precio_unitario * item.cantidad || 0), 0)}
+                totalIva={formData.items.reduce((total, item) => total + parseFloat(item.precio_unitario * item.cantidad * IVA_PERCENTAGE / 100 || 0), 0)}
+                totalConIva={formData.items.reduce((total, item) => total + parseFloat(item.precio_unitario * item.cantidad * (1 + IVA_PERCENTAGE / 100) || 0), 0)}
                 IVA_PERCENTAGE={IVA_PERCENTAGE}
                 handleSubmit={handleSubmit}
                 message={message}

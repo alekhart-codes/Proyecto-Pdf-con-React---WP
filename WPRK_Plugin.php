@@ -42,12 +42,12 @@ class WPRK_Plugin {
     }
 
     public function menu_page_template() {
-        // Contenedor para la aplicación React
         echo '<div class="wrap">
-            <h1>' . esc_html__('Cotizador PDF', 'wp-react-pdf-cotizacion') . '</h1>
-            <div id="wprk-admin-app"></div>
+            <!-- Contenedor para la aplicación React sin el título -->
+            <div id="wprk-admin-app" style="padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #fff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);"></div>
         </div>';
     }
+    
 
     public function enqueue_scripts($hook) {
         if ($hook !== 'toplevel_page_wprk-settings') {
