@@ -91,32 +91,32 @@ const generatePdf = async (quote) => {
         yPosition = tableStartY - rowHeight * (productos.length + 2) - 150;
 
         // Calcular y mostrar Neto, IVA y Total
-        page.drawText(`Neto: $${Number(quote.neto).toLocaleString()}`, {
-            x: 150,
+        page.drawText(`Total sin IVA: $${quote.total_sin_iva}`, {
+            x: 50,
             y: yPosition,
             size: 15,
             font: timesRomanFont,
             color: rgb(0, 0, 0),
         });
         yPosition -= 20;
-
-        page.drawText(`IVA (19%): $${Number(quote.iva).toLocaleString()}`, {
-            x: 150,
+    
+        page.drawText(`Total IVA: $${quote.total_iva}`, {
+            x: 50,
             y: yPosition,
             size: 15,
             font: timesRomanFont,
             color: rgb(0, 0, 0),
         });
         yPosition -= 20;
-
-        page.drawText(`Total: $${Number(quote.total).toLocaleString()}`, {
-            x: 150,
+    
+        page.drawText(`Total con IVA: $${quote.total_con_iva}`, {
+            x: 50,
             y: yPosition,
             size: 15,
             font: timesRomanFont,
             color: rgb(0, 0, 0),
         });
-
+        
         // Serializar el PDF
         const pdfBytes = await pdfDoc.save();
 

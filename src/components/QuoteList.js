@@ -4,6 +4,7 @@ import EditQuote from './EditQuote'; // Asegúrate de que la ruta sea correcta
 import generatePdf from './generatePdf';
 import PDFPreview from './PDFPreview'; // Asegúrate de que la ruta sea correcta
 import './QuoteList.css'; // Asegúrate de que la ruta sea correcta
+import { DropQuote } from './DropQuote';
 
 const QuoteList = () => {
     const [quotes, setQuotes] = useState([]);
@@ -112,6 +113,11 @@ const QuoteList = () => {
         setSearchTerm(e.target.value);
     };
 
+    const handleDelete = (id) => {
+        setQuotes(quotes.filter(quote => quote.id !== id));
+        setDisplayedQuotes(displayedQuotes.filter(quote => quote.id !== id));
+    };
+
     // Manejo de fechas
     const handleDateChange = () => {
         setDisplayedQuotes(filteredQuotes.slice(0, visibleCount));
@@ -208,8 +214,8 @@ const QuoteList = () => {
                                 </td>
                                 <td>$ {quote.total_con_iva}</td>
                                 <td>
-                                    <a href="#" onClick={() => openModal(quote.id)}>Editar</a> | 
-                                    <a href="#" className="trash">Eliminar</a> |
+                                    <a href="#" onClick={() => openModal(quote.id)}>Editar</a> |
+                                    <DropQuote  id={quote.id} onDelete= {handleDelete}></DropQuote>|
                                     <a href="#" onClick={() => handlePreviewClick(quote)}>Ver Cotización</a>
                                 </td>
                             </tr>
