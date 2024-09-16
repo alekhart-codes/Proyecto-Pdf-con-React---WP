@@ -42,12 +42,12 @@ class WPRK_Plugin {
     }
 
     public function menu_page_template() {
-        // Contenedor para la aplicación React
         echo '<div class="wrap">
-            <h1>' . esc_html__('Cotizador PDF', 'wp-react-pdf-cotizacion') . '</h1>
-            <div id="wprk-admin-app"></div>
+            <!-- Contenedor para la aplicación React sin el título -->
+            <div id="wprk-admin-app" style="padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #fff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);"></div>
         </div>';
     }
+    
 
     public function enqueue_scripts($hook) {
         if ($hook !== 'toplevel_page_wprk-settings') {
@@ -105,41 +105,6 @@ class WPRK_Plugin {
         'permission_callback' => '__return_true',
     ]);
 
-    }
-
-    public function get_quotes() {
-        $args = [
-            'post_type'   => 'quote',
-            'post_status' => 'publish',
-            'numberposts' => -1
-        ];
-
-        $quotes = get_posts($args);
-        $response = [];
-
-        foreach ($quotes as $quote) {
-            $meta = get_post_meta($quote->ID);
-            $items_json = $meta['_items'][0] ?? '';
-
-            // Decodificar JSON
-            $items = $items_json ? json_decode($items_json, true) : [];
-
-            $response[] = [
-                'id' => $quote->ID,
-                'title' => $quote->post_title,
-                'nro_orden' => $meta['_nro_orden'][0] ?? '',
-                'nro_de_cotizacion' => $meta['_nro_de_cotizacion'][0] ?? '',
-                'nro_de_factura' => $meta['_nro_de_factura'][0] ?? '',
-                'fecha' => $meta['_fecha'][0] ?? '',
-                'estado' => $meta['_estado'][0] ?? '',
-                'items' => $items,
-                'nota' => $meta['_nota'][0] ?? '',
-            ];
-        }
-
-        error_log(print_r($response, true)); // Para depuración
-
-        return rest_ensure_response($response);
     }
 
     public function add_quote($req) { 
@@ -208,8 +173,46 @@ class WPRK_Plugin {
         return rest_ensure_response($response);
     }
     
+    public function get_quotes() {
+        $args = [
+            'post_type'   => 'quote',
+            'post_status' => 'publish',
+            'numberposts' => -1
+        ];
+    
+        $quotes = get_posts($args);
+        $response = [];
+    
+        foreach ($quotes as $quote) {
+            $meta = get_post_meta($quote->ID);
+            $items_json = $meta['_items'][0] ?? '';
+    
+            // Decodificar JSON
+            $items = $items_json ? json_decode($items_json, true) : [];
+    
+            $response[] = [
+                'id' => $quote->ID,
+                'title' => $quote->post_title,
+                'nro_orden' => $meta['_nro_orden'][0] ?? '',
+                'nro_de_cotizacion' => $meta['_nro_de_cotizacion'][0] ?? '',
+                'nro_de_factura' => $meta['_nro_de_factura'][0] ?? '',
+                'fecha' => $meta['_fecha'][0] ?? '',
+                'estado' => $meta['_estado'][0] ?? '',
+                'items' => $items,
+                'nota' => $meta['_nota'][0] ?? '',
+                'total_sin_iva' => $meta['_total_sin_iva'][0] ?? '',
+                'total_iva' => $meta['_total_iva'][0] ?? '',
+                'total_con_iva' => $meta['_total_con_iva'][0] ?? '',
+            ];
+        }
+    
+        error_log(print_r($response, true)); // Para depuración
+    
+        return rest_ensure_response($response);
+    }
+    
 
-      public function update_quote_state($req) {
+    public function update_quote_state($req) {
         $id = intval($req['id']);
         $estado = sanitize_text_field($req['estado']);
     

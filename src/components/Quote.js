@@ -84,9 +84,12 @@ const Quote = ({
               value={formData.estado}
               onChange={handleFormChange}
             >
-              <option value="Pendiente">Pendiente</option>
-              <option value="Aprobada">Aprobada</option>
-              <option value="Rechazada">Rechazada</option>
+              <option value="">- Selecciona -</option>
+                                <option value="Espera">Espera</option>
+                                <option value="Aprobada">Aprobada</option>
+                                <option value="Aprobada sin OC">Aprobada sin OC</option>
+                                <option value="Facturada">Facturada</option>
+                                <option value="Cancelada">Cancelada</option>
             </select>
           </div>
         </div>

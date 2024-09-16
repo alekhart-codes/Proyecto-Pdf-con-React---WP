@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import EditQuote from './EditQuote'; // Asegúrate de que la ruta sea correcta
 import generatePdf from './generatePdf';
@@ -21,16 +21,77 @@ const QuoteList = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedQuoteId, setSelectedQuoteId] = useState(null);
 
-    const openModal = (quoteId) => {
-        setSelectedQuoteId(quoteId);
-        setIsModalOpen(true);
+    // Cargar cotizaciones al inicio
+    useEffect(() => {
+        const fetchQuotes = async () => {
+            try {
+                const response = await axios.get(url, {
+                    headers: {
+                        'content-type': 'application/json',
+                        'X-WP-NONCE': appLocalizer.nonce
+                    }
+                });
+                if (response.data && Array.isArray(response.data)) {
+                    if (response.data.length === 0) {
+                        setError('No se encontraron cotizaciones.');
+                    } else {
+                        setQuotes(response.data);
+                        console.log(response.data);
+                        setDisplayedQuotes(response.data.slice(0, visibleCount));
+                    }
+                } else {
+                    setError('Error al leer las cotizaciones');
+                }
+            } catch (error) {
+                setError('Error al recuperar las cotizaciones');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchQuotes();
+    }, [url, visibleCount]);
+
+    // Filtrar cotizaciones
+    const filteredQuotes = useMemo(() => {
+        return quotes.filter(quote => {
+            const matchesTerm =
+                quote.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                quote.nro_de_cotizacion.toString().includes(searchTerm) ||
+                quote.nro_orden.toString().includes(searchTerm) ||
+                quote.nro_de_factura.toString().includes(searchTerm);
+
+            const quoteDate = new Date(quote.fecha);
+            const matchesDate =
+                (!startDate || quoteDate >= new Date(startDate)) &&
+                (!endDate || quoteDate <= new Date(endDate));
+
+            return matchesTerm && matchesDate;
+        });
+    }, [quotes, searchTerm, startDate, endDate]);
+
+    // Actualizar estado de la cotización
+    const handleStateChange = async (id, newState) => {
+        try {
+            await axios.post(`${appLocalizer.apiUrl}/update-quote-state`, {
+                id,
+                estado: newState
+            }, {
+                headers: {
+                    'content-type': 'application/json',
+                    'X-WP-NONCE': appLocalizer.nonce
+                }
+            });
+            setUpdatedState(prevState => ({
+                ...prevState,
+                [id]: newState
+            }));
+        } catch (error) {
+            console.error('Error al actualizar el estado:', error);
+        }
     };
 
-    const closeModal = () => {
-        setSelectedQuoteId(null);
-        setIsModalOpen(false);
-    };
-
+    // Manejo de la vista previa del PDF
     const handlePreviewClick = async (quote) => {
         try {
             const url = await generatePdf(quote);
@@ -46,69 +107,28 @@ const QuoteList = () => {
         setPdfUrl('');
     };
 
+    // Manejo de búsqueda
     const handleSearch = (e) => {
         setSearchTerm(e.target.value);
-        const filteredQuotes = quotes.filter(quote => {
-            const matchesTerm = 
-                quote.title.toLowerCase().includes(e.target.value.toLowerCase()) || 
-                quote.nro_de_cotizacion.toString().includes(e.target.value) ||
-                quote.nro_orden.toString().includes(e.target.value) ||
-                quote.nro_de_factura.toString().includes(e.target.value);
+    };
 
-            const quoteDate = new Date(quote.fecha);
-            const matchesDate = (!startDate || quoteDate >= new Date(startDate)) &&
-                                (!endDate || quoteDate <= new Date(endDate));
-
-            return matchesTerm && matchesDate;
-        });
+    // Manejo de fechas
+    const handleDateChange = () => {
         setDisplayedQuotes(filteredQuotes.slice(0, visibleCount));
     };
 
-    const handleStateChange = (id, newState) => {
-        setUpdatedState(prevState => ({
-            ...prevState,
-            [id]: newState
-        }));
-    
-        axios.post(`${appLocalizer.apiUrl}/update-quote-state`, {
-            id,
-            estado: newState
-        }, {
-            headers: {
-                'content-type': 'application/json',
-                'X-WP-NONCE': appLocalizer.nonce
-            }
-        })
-        .then(response => {
-            console.log('Estado actualizado:', response.data);
-        })
-        .catch(error => {
-            console.error('Error al actualizar el estado:', error);
-        });
+    // Manejo del modal
+    const openModal = (quoteId) => {
+        setSelectedQuoteId(quoteId);
+        setIsModalOpen(true);
     };
 
-    useEffect(() => {
-        axios.get(url, {
-            headers: {
-                'content-type': 'application/json',
-                'X-WP-NONCE': appLocalizer.nonce
-            }
-        })
-        .then(response => {
-            if (response.data && Array.isArray(response.data)) {
-                setQuotes(response.data);
-                setDisplayedQuotes(response.data.slice(0, visibleCount));
-            } else {
-                setError('Error al leer las cotizaciones');
-            }
-            setLoading(false);
-        })
-        .catch(error => {
-            setError('Error al recuperar las cotizaciones');
-            setLoading(false);
-        });
-    }, [visibleCount]);
+    const closeModal = () => {
+        setSelectedQuoteId(null);
+        setIsModalOpen(false);
+    };
 
+    // Manejo del scroll infinito
     useEffect(() => {
         const handleScroll = () => {
             if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
@@ -120,14 +140,12 @@ const QuoteList = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-
     if (loading) return <p>Cargando cotizaciones...</p>;
     if (error) return <p>{error}</p>;
 
     return (
         <div className="quote-list-section">
-            
-            <div className="search-bar" autoFocus>
+            <div className="search-bar">
                 <input 
                     type="text" 
                     placeholder="Filtrar cotizaciones..." 
@@ -137,12 +155,12 @@ const QuoteList = () => {
                 <input 
                     type="date" 
                     value={startDate}
-                    onChange={(e) => { setStartDate(e.target.value); handleSearch({ target: { value: searchTerm } }); }}
+                    onChange={(e) => { setStartDate(e.target.value); handleDateChange(); }}
                 />
                 <input 
                     type="date" 
                     value={endDate}
-                    onChange={(e) => { setEndDate(e.target.value); handleSearch({ target: { value: searchTerm } }); }}
+                    onChange={(e) => { setEndDate(e.target.value); handleDateChange(); }}
                 />
             </div>
             <div className="quote-list">
@@ -160,14 +178,14 @@ const QuoteList = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {displayedQuotes.map((quote) => (
+                        {filteredQuotes.slice(0, visibleCount).map((quote) => (
                             <tr key={quote.id}>
                                 <td>
                                     <input type="checkbox" />
                                 </td>
                                 <td>
                                     <strong>
-                                        <a href={`/wp-admin/post.php?post=${quote.id}&action=edit`}>
+                                        <a href="#" onClick={() => openModal(quote.id)}>
                                             {quote.title}
                                         </a>
                                     </strong>
@@ -180,18 +198,18 @@ const QuoteList = () => {
                                         value={updatedState[quote.id] || quote.estado}
                                         onChange={(e) => handleStateChange(quote.id, e.target.value)}
                                     >
-                                            <option value="">- Selecciona -</option>
-                                            <option value="Espera">Espera</option>
-                                            <option value="Aprobada">Aprobada</option>
-                                            <option value="Aprobada sin OC">Aprobada sin OC</option>
-                                            <option value="Facturada">Facturada</option>
-                                            <option value="Cancelada">Cancelada</option>
+                                        <option value="">- Selecciona -</option>
+                                        <option value="Espera">Espera</option>
+                                        <option value="Aprobada">Aprobada</option>
+                                        <option value="Aprobada sin OC">Aprobada sin OC</option>
+                                        <option value="Facturada">Facturada</option>
+                                        <option value="Cancelada">Cancelada</option>
                                     </select>
                                 </td>
-                                <td>$ {quote.total}</td>
+                                <td>$ {quote.total_con_iva}</td>
                                 <td>
                                     <a href="#" onClick={() => openModal(quote.id)}>Editar</a> | 
-                                    <a href={`/wp-admin/post.php?post=${quote.id}&action=trash`} className="trash">Eliminar</a> |
+                                    <a href="#" className="trash">Eliminar</a> |
                                     <a href="#" onClick={() => handlePreviewClick(quote)}>Ver Cotización</a>
                                 </td>
                             </tr>
