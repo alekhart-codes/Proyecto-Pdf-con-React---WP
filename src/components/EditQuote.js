@@ -4,7 +4,8 @@ import Modal from './Modal';
 import './EditQuote.css';
 import Quote from './Quote';
 
-const EditQuote = ({ quoteId, onClose }) => {
+const EditQuote = ({ quoteId, onClose, onSave }) => {
+
     const [formData, setFormData] = useState({
         nro_orden: '',
         nro_de_cotizacion: '',
@@ -141,8 +142,7 @@ const EditQuote = ({ quoteId, onClose }) => {
                 'X-WP-NONCE': appLocalizer.nonce
             }
         })
-        .then( response => {
-            onSave(response.data);  
+        .then(()=>{
             setMessage('Cotización actualizada con éxito');
         })
         .catch((error) => {

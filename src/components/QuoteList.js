@@ -37,7 +37,6 @@ const QuoteList = () => {
                         setError('No se encontraron cotizaciones.');
                     } else {
                         setQuotes(response.data);
-                        console.log(response.data);
                         setDisplayedQuotes(response.data.slice(0, visibleCount));
                     }
                 } else {
@@ -53,14 +52,6 @@ const QuoteList = () => {
         fetchQuotes();
     }, [url, visibleCount]);
 
-    const updateQuote = (updatedQuote) => {
-        setQuotes((prevQuotes) =>
-          prevQuotes.map((quote) =>
-            quote.id === updatedQuote.id ? updatedQuote : quote
-          )
-        );
-      };
-    
     // Filtrar cotizaciones
     const filteredQuotes = useMemo(() => {
         return quotes.filter(quote => {
@@ -97,6 +88,26 @@ const QuoteList = () => {
             }));
         } catch (error) {
             console.error('Error al actualizar el estado:', error);
+        }
+    };
+
+    // Actualizar lista de cotizaciones después de editar
+    const updateQuoteList = async (id) => {
+        try {
+            const response = await axios.get(url, {
+                headers: {
+                    'content-type': 'application/json',
+                    'X-WP-NONCE': appLocalizer.nonce
+                }
+            });
+            if (response.data && Array.isArray(response.data)) {
+                setQuotes(response.data);
+                setDisplayedQuotes(response.data.slice(0, visibleCount));
+            } else {
+                setError('Error al leer las cotizaciones');
+            }
+        } catch (error) {
+            setError('Error al recuperar las cotizaciones');
         }
     };
 
@@ -140,6 +151,10 @@ const QuoteList = () => {
     const closeModal = () => {
         setSelectedQuoteId(null);
         setIsModalOpen(false);
+        // Actualizar lista de cotizaciones después de cerrar el modal
+        if (selectedQuoteId) {
+            updateQuoteList(selectedQuoteId);
+        }
     };
 
     // Manejo del scroll infinito
@@ -223,7 +238,7 @@ const QuoteList = () => {
                                 <td>$ {quote.total_con_iva}</td>
                                 <td>
                                     <a href="#" onClick={() => openModal(quote.id)}>Editar</a> |
-                                    <DropQuote  id={quote.id} onDelete= {handleDelete}></DropQuote>|
+                                    <DropQuote id={quote.id} onDelete={handleDelete} /> |
                                     <a href="#" onClick={() => handlePreviewClick(quote)}>Ver Cotización</a>
                                 </td>
                             </tr>
@@ -242,7 +257,6 @@ const QuoteList = () => {
                         <EditQuote
                             quoteId={selectedQuoteId}
                             onClose={closeModal}
-                            onSave={updateQuote}
                         />
                     </div>
                 </div>
