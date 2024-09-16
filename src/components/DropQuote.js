@@ -6,15 +6,19 @@ export const DropQuote = ({ id, onDelete }) => {
         if (!window.confirm('¿Estás seguro de que deseas eliminar esta cotización?')) {
             return;
         }
+        console.log('Nonce:', appLocalizer.nonce);
+
+        console.log('Nonce:', appLocalizer.apiUrl);
 
         try {
-            await axios.delete(`${appLocalizer.apiUrl}/wprk/v1/drop-quote/${id}`, {
-                headers:
-                {
+            await axios.delete(`${appLocalizer.apiUrl}/drop-quote/${id}`, {
+                headers: {
                     'Content-Type': 'application/json',
-                    'X-WP-NONCE': appLocalizer.nonce  // Incluye el nonce para la autenticación
+                    'X-WP-NONCE': appLocalizer.nonce  // Verifica que appLocalizer.nonce sea correcto
                 }
             });
+
+            
             onDelete(id); // Llama a la función pasada para actualizar la lista de cotizaciones
             alert('Cotización eliminada con éxito');
         } catch (error) {
@@ -25,9 +29,8 @@ export const DropQuote = ({ id, onDelete }) => {
 
     return (
         <a href="#" onClick={(e) => { 
-            e.preventDefault(); 
-            handleDelete(); 
+            e.preventDefault(); // Evita el comportamiento predeterminado del enlace
+            handleDelete(); // Llama a la función de eliminación
         }} className="trash">Eliminar</a>
     );
 };
-

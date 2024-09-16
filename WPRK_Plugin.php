@@ -105,12 +105,13 @@ class WPRK_Plugin {
         'permission_callback' => '__return_true',
     ]);
 
-    register_rest_route('wprk/v1', '/drop-quote/(?P<id>\d+)', [
+    register_rest_route('wprk/v1', '/drop-quote/(?P<id>\d+)', array(
             'methods' => 'DELETE',
             'callback' => [$this, 'drop_quote'],
-            'permission_callback' => '__return_true',
-    ]);
-
+            'permission_callback' => [$this, 'drop_quote_permission'],
+    ));
+    
+    
     }
 
     public function add_quote($req) { 
@@ -217,34 +218,52 @@ class WPRK_Plugin {
         return rest_ensure_response($response);
     }
     
-    public function drop_quote($req)
-    {
+    public function drop_quote($req) {
+        
         if (empty($req['id']) || !is_numeric($req['id'])) {
             return new WP_Error('invalid_id', 'El ID de la cotización no es válido', array('status' => 400));
         }
     
         $id = intval($req['id']);
-        
+    
         // Verifica que el post existe y que es del tipo 'quote'
         $post = get_post($id);
         if (!$post || $post->post_type !== 'quote') {
             return new WP_Error('not_found', 'La cotización no se encontró', array('status' => 404));
         }
-        
+    
         // Verifica que el usuario tiene permisos para eliminar la cotización
         if (!current_user_can('delete_post', $id)) {
             return new WP_Error('permission_denied', 'No tienes permiso para eliminar esta cotización', array('status' => 403));
         }
-        
-        // Elimina el post y sus metadatos asociados
+    
+        // Elimina los metadatos asociados al post
+        $meta_keys = [
+            '_nro_orden',
+            '_nro_de_factura',
+            '_fecha',
+            '_estado',
+            '_items',
+            '_nota',
+            '_total_sin_iva',
+            '_total_iva',
+            '_total_con_iva',
+        ];
+    
+        foreach ($meta_keys as $key) {
+            delete_post_meta($id, $key);
+        }
+    
+        // Elimina el post
         $deleted = wp_delete_post($id, true);
-        
+    
         if ($deleted) {
             return rest_ensure_response(array('message' => 'Cotización eliminada con éxito'));
         } else {
             return new WP_Error('delete_failed', 'No se pudo eliminar la cotización', array('status' => 500));
-        }   
+        }
     }
+    
 
     public function update_quote_state($req) {
         $id = intval($req['id']);
@@ -331,7 +350,9 @@ class WPRK_Plugin {
             return false;
         }
     }
-
+    function drop_quote_permission() {
+        return current_user_can('delete_posts');
+    }
     public function get_quote_by_id($data) {
         $id = intval($data['id']);
         
