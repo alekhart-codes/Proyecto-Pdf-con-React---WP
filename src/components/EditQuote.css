@@ -114,3 +114,22 @@ button[type="button"] {
     padding: 10px;
     margin-bottom: 13px; /* Espacio inferior para separar las líneas de productos */
 }
+
+/* Estilo para el contenedor de productos */
+.items-container {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr); /* Dos columnas de igual ancho */
+    gap: 15px; /* Espacio entre las columnas */
+}
+
+/* Estilo para las filas de productos dentro del contenedor */
+.item-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Espacio entre los campos de un producto */
+}
+
+.item-row input {
+    width: 100%; /* Asegura que los inputs ocupen todo el ancho disponible */
+}
+

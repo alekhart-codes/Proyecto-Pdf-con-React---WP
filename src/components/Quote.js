@@ -144,6 +144,7 @@ const Quote = ({
             <button type="button" onClick={() => removeItem(index)}>Eliminar</button>
           </div>
         ))}
+        {errors.items && <p className="error">{errors.items}</p>}
         <button type="button" onClick={addNewItem}>Agregar Producto</button>
       </div>
 

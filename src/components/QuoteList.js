@@ -53,6 +53,14 @@ const QuoteList = () => {
         fetchQuotes();
     }, [url, visibleCount]);
 
+    const updateQuote = (updatedQuote) => {
+        setQuotes((prevQuotes) =>
+          prevQuotes.map((quote) =>
+            quote.id === updatedQuote.id ? updatedQuote : quote
+          )
+        );
+      };
+    
     // Filtrar cotizaciones
     const filteredQuotes = useMemo(() => {
         return quotes.filter(quote => {
@@ -234,6 +242,7 @@ const QuoteList = () => {
                         <EditQuote
                             quoteId={selectedQuoteId}
                             onClose={closeModal}
+                            onSave={updateQuote}
                         />
                     </div>
                 </div>

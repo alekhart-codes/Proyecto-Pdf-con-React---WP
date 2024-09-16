@@ -70,6 +70,17 @@ const EditQuote = ({ quoteId, onClose }) => {
     };
     
     const addNewItem = () => {
+
+    const lastItem = formData.items[formData.items.length - 1];
+
+        if (!lastItem.producto || !lastItem.cantidad || !lastItem.precio_unitario) {
+            setErrors({
+                ...errors,
+                items: 'Porfavor completa el producto actual antes de agregar uno nuevo'
+        });
+        return;
+    }
+        setErrors({...errors, items:''});
         setFormData({
             ...formData,
             items: [...formData.items, {  
@@ -130,7 +141,8 @@ const EditQuote = ({ quoteId, onClose }) => {
                 'X-WP-NONCE': appLocalizer.nonce
             }
         })
-        .then(() => {
+        .then( response => {
+            onSave(response.data);  
             setMessage('Cotización actualizada con éxito');
         })
         .catch((error) => {
