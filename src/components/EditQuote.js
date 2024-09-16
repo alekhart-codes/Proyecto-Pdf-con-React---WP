@@ -13,10 +13,12 @@ const EditQuote = ({ quoteId, onClose }) => {
         cliente: '',
         estado: '',
         items: [{
-            producto: '',
-            cantidad: '',
-            precio_unitario: '',
-            precio: ''
+            producto: '', 
+            cantidad: '', 
+            precio_unitario: '', 
+            precio_total_sin_iva: '', 
+            iva_total: '', 
+            total_mas_iva: '' 
         }],
         nota: ''
     });
@@ -47,19 +49,51 @@ const EditQuote = ({ quoteId, onClose }) => {
         const newItems = formData.items.map((item, i) => (
             i === index ? { ...item, [name]: value } : item
         ));
-        setFormData({ ...formData, items: newItems });
-    };
 
+        const updatedItems = newItems.map(item => {
+            const cantidad = parseFloat(item.cantidad) || 0;
+            const precioUnitario = parseFloat(item.precio_unitario) || 0;
+            const precioTotalSinIva = cantidad * precioUnitario;
+            const ivaTotal = precioTotalSinIva * (IVA_PERCENTAGE / 100);
+            const totalMasIva = precioTotalSinIva + ivaTotal;
+
+            return { 
+                ...item, 
+                precio_total_sin_iva: precioTotalSinIva.toFixed(2),
+                iva_total: ivaTotal.toFixed(2),
+                total_mas_iva: totalMasIva.toFixed(2),
+                precio: totalMasIva.toFixed(2)
+            };
+        });
+
+        setFormData({ ...formData, items: updatedItems });
+    };
+    
     const addNewItem = () => {
         setFormData({
             ...formData,
-            items: [...formData.items, { producto: '', cantidad: '', precio_unitario: '', precio: '' }]
+            items: [...formData.items, {  
+                producto: '', 
+                cantidad: '', 
+                precio_unitario: '', 
+                precio_total_sin_iva: '', 
+                iva_total: '', 
+                total_mas_iva: '' 
+            }]
         });
     };
 
     const removeItem = (index) => {
-        const newItems = formData.items.filter((_, i) => i !== index);
-        setFormData({ ...formData, items: newItems });
+        if (window.confirm('¿Estás seguro de que deseas eliminar esta línea?')) {
+            if (formData.items.length > 1) {
+                setFormData({
+                    ...formData,
+                    items: formData.items.filter((_, i) => i !== index)
+                });
+            } else {
+                alert('Debes mantener al menos una línea en la lista.');
+            }
+        }
     };
 
     const validateForm = () => {
@@ -78,20 +112,31 @@ const EditQuote = ({ quoteId, onClose }) => {
         e.preventDefault();
         if (!validateForm()) return;
 
+        // Calculamos los totales generales
+        const totalSinIva = formData.items.reduce((total, item) => total + parseFloat(item.precio_total_sin_iva || 0), 0);
+        const totalIva = formData.items.reduce((total, item) => total + parseFloat(item.iva_total || 0), 0);
+        const totalConIva = formData.items.reduce((total, item) => total + parseFloat(item.total_mas_iva || 0), 0);
+
         const updatedQuote = {
             ...formData,
-            totalSinIva: formData.items.reduce((total, item) => total + parseFloat(item.precio_unitario * item.cantidad || 0), 0),
-            totalIva: formData.items.reduce((total, item) => total + parseFloat(item.precio_unitario * item.cantidad * IVA_PERCENTAGE / 100 || 0), 0),
-            totalConIva: formData.items.reduce((total, item) => total + parseFloat(item.precio_unitario * item.cantidad * (1 + IVA_PERCENTAGE / 100) || 0), 0),
+            total_sin_iva: totalSinIva.toFixed(2),
+            total_iva: totalIva.toFixed(2),
+            total_con_iva: totalConIva.toFixed(2)
         };
 
-        axios.post(`${appLocalizer.apiUrl}/update-quote/${quoteId}`, updatedQuote)
-            .then(() => {
-                setMessage('Cotización actualizada con éxito');
-            })
-            .catch((error) => {
-                console.error('Error al actualizar cotización:', error);
-            });
+        axios.post(`${appLocalizer.apiUrl}/update-quote/${quoteId}`, updatedQuote, {
+            headers: {
+                'content-type': 'application/json',
+                'X-WP-NONCE': appLocalizer.nonce
+            }
+        })
+        .then(() => {
+            setMessage('Cotización actualizada con éxito');
+        })
+        .catch((error) => {
+            console.error('Error al actualizar cotización:', error);
+            setMessage('Error al actualizar cotización');
+        }); 
     };
 
     return (
@@ -104,9 +149,9 @@ const EditQuote = ({ quoteId, onClose }) => {
                 handleItemChange={handleItemChange}
                 addNewItem={addNewItem}
                 removeItem={removeItem}
-                totalSinIva={formData.items.reduce((total, item) => total + parseFloat(item.precio_unitario * item.cantidad || 0), 0)}
-                totalIva={formData.items.reduce((total, item) => total + parseFloat(item.precio_unitario * item.cantidad * IVA_PERCENTAGE / 100 || 0), 0)}
-                totalConIva={formData.items.reduce((total, item) => total + parseFloat(item.precio_unitario * item.cantidad * (1 + IVA_PERCENTAGE / 100) || 0), 0)}
+                totalSinIva={formData.items.reduce((total, item) => total + parseFloat(item.precio_total_sin_iva || 0), 0)}
+                totalIva={formData.items.reduce((total, item) => total + parseFloat(item.iva_total || 0), 0)}
+                totalConIva={formData.items.reduce((total, item) => total + parseFloat(item.total_mas_iva || 0), 0)}
                 IVA_PERCENTAGE={IVA_PERCENTAGE}
                 handleSubmit={handleSubmit}
                 message={message}

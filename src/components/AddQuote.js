@@ -111,14 +111,26 @@ const AddQuote = () => {
         return { totalSinIva, totalIva, totalConIva };
     };
 
+    
     const handleSubmit = (e) => {
         e.preventDefault();
-
+    
         if (!validateForm()) return;
-        
+    
+        // Calculamos los totales generales
+        const { totalSinIva, totalIva, totalConIva } = calculateTotals();
+    
+        // Creamos un objeto con los datos del formulario, incluyendo los totales calculados
+        const quoteData = {
+            ...formData,
+            total_sin_iva: totalSinIva.toFixed(2),
+            total_iva: totalIva.toFixed(2),
+            total_con_iva: totalConIva.toFixed(2)
+        };
+    
         axios.post(
             `${appLocalizer.apiUrl}/add-quote`, 
-            formData,
+            quoteData,
             {
                 headers: {
                     'content-type': 'application/json',
@@ -144,8 +156,7 @@ const AddQuote = () => {
                         cantidad: '', 
                         precio_unitario: '', 
                         precio_total_sin_iva: '', 
-                        iva_total: '', 
-                        total_mas_iva: '' 
+                        iva_total: ''
                     }],
                     nota: ''
                 });
@@ -159,6 +170,8 @@ const AddQuote = () => {
             setMessage('Error al conectar con la API');
         });
     };
+    
+    
 
     useEffect(() => {
         axios.get(url)
@@ -177,7 +190,10 @@ const AddQuote = () => {
                         precio_unitario: '', 
                         precio_total_sin_iva: '', 
                         iva_total: '', 
-                        total_mas_iva: '' 
+                        total_mas_iva: '',
+                        total_sin_iva:'',
+                        total_iva:'',
+                        total_con_iva: '' 
                     }],
                     nota: data.nota || ''
                 });
@@ -307,7 +323,7 @@ const AddQuote = () => {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label htmlFor={`precio_${index}`}>Precio Total</label>
+                                    <label htmlFor={`precio_${index}`}>Precio Total Neto</label>
                                     <input
                                         type="number"
                                         id={`precio_${index}`}

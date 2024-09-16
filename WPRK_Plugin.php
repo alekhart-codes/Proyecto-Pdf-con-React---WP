@@ -42,12 +42,12 @@ class WPRK_Plugin {
     }
 
     public function menu_page_template() {
+        // Contenedor para la aplicación React
         echo '<div class="wrap">
-            <!-- Contenedor para la aplicación React sin el título -->
-            <div id="wprk-admin-app" style="padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #fff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);"></div>
+            <h1>' . esc_html__('Cotizador PDF', 'wp-react-pdf-cotizacion') . '</h1>
+            <div id="wprk-admin-app"></div>
         </div>';
     }
-    
 
     public function enqueue_scripts($hook) {
         if ($hook !== 'toplevel_page_wprk-settings') {
@@ -142,15 +142,18 @@ class WPRK_Plugin {
         return rest_ensure_response($response);
     }
 
-    public function add_quote($req) {
+    public function add_quote($req) { 
         // Sanitizar los datos de la solicitud
         $nro_orden = sanitize_text_field($req['nro_orden']);
         $nro_de_factura = sanitize_text_field($req['nro_de_factura']);
         $fecha = sanitize_text_field($req['fecha']);
         $cliente = sanitize_text_field($req['cliente']);
         $estado = sanitize_text_field($req['estado']);
-        $items = json_encode($req['items']); // Convertir a JSON
+        $items = $req['items']; // Los ítems no necesitan campos de total general
         $nota = sanitize_textarea_field($req['nota']);
+        
+        // Convertir los ítems a JSON
+        $items_json = json_encode($items);
     
         // Insertar el post
         $quote_id = wp_insert_post([
@@ -158,12 +161,15 @@ class WPRK_Plugin {
             'post_type'    => 'quote',
             'post_status'  => 'publish',
             'meta_input'   => [
-                '_nro_orden' => $nro_orden,                
+                '_nro_orden' => $nro_orden,
                 '_nro_de_factura' => $nro_de_factura,
                 '_fecha' => $fecha,
                 '_estado' => $estado,
-                '_items' => $items,  // Guardar como JSON
+                '_items' => $items_json,  // Guardar como JSON
                 '_nota' => $nota,
+                '_total_sin_iva' => sanitize_text_field($req['total_sin_iva']),
+                '_total_iva' => sanitize_text_field($req['total_iva']),
+                '_total_con_iva' => sanitize_text_field($req['total_con_iva']),
             ],
         ]);
     
@@ -194,11 +200,16 @@ class WPRK_Plugin {
             'estado' => $meta['_estado'][0] ?? '',
             'items' => json_decode($meta['_items'][0] ?? '[]', true),  // Decodificar como JSON
             'nota' => $meta['_nota'][0] ?? '',
+            'total_sin_iva' => $meta['_total_sin_iva'][0] ?? '',
+            'total_iva' => $meta['_total_iva'][0] ?? '',
+            'total_con_iva' => $meta['_total_con_iva'][0] ?? '',
         ];
     
         return rest_ensure_response($response);
     }
-    public function update_quote_state($req) {
+    
+
+      public function update_quote_state($req) {
         $id = intval($req['id']);
         $estado = sanitize_text_field($req['estado']);
     
@@ -232,6 +243,11 @@ class WPRK_Plugin {
         $estado = sanitize_text_field($req['estado']);
         $items = json_encode($req['items']);
         $nota = sanitize_textarea_field($req['nota']);
+        
+        // Nuevos campos para total
+        $total_sin_iva = sanitize_text_field($req['total_sin_iva']);
+        $total_iva = sanitize_text_field($req['total_iva']);
+        $total_con_iva = sanitize_text_field($req['total_con_iva']);
     
         if (!$id || !$cliente) {
             return rest_ensure_response([
@@ -254,11 +270,17 @@ class WPRK_Plugin {
         update_post_meta($id, '_items', $items);
         update_post_meta($id, '_nota', $nota);
     
+        // Nuevos campos para total
+        update_post_meta($id, '_total_sin_iva', $total_sin_iva);
+        update_post_meta($id, '_total_iva', $total_iva);
+        update_post_meta($id, '_total_con_iva', $total_con_iva);
+    
         return rest_ensure_response([
             'status' => 'success',
             'message' => 'Cotización actualizada correctamente.',
         ]);
     }
+    
     
     public function update_quote_permission() {
         return current_user_can('publish_posts');
