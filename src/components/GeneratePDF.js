@@ -10,6 +10,15 @@ const generatePdf = async (quote) => {
         // Supongamos que `formData.nota` contiene la nota que deseas agregar
         const note = quote.nota || '';
 
+        const drawLineUnderText = (page, x, y) => {
+            page.drawLine({
+                start: { x, y },
+                end: { x: x + 500, y }, // Ajusta la longitud según sea necesario
+                color: rgb(0, 0, 0), // Color de la línea (negro en este caso)
+                thickness: 1, // Grosor de la línea
+            });
+        };
+
         // Inicializar variables
         let page = pdfDoc.addPage([600, 700]);
         const { width, height } = page.getSize();
@@ -58,19 +67,19 @@ const generatePdf = async (quote) => {
 
         // Información principal de la cotización
         const drawQuoteInfo = () => {
-            page.drawText(`N° Cotización: ${quote.nro_de_cotizacion}`, { x: 50, y: yPosition, size: 15, font: timesRomanFont, color: rgb(0, 0, 0) });
-            yPosition -= 30;
+            page.drawText(`N° Cotización: ${quote.nro_de_cotizacion}`, { x: 50, y: yPosition, size: 14, font: timesRomanFont, color: rgb(0, 0, 0) });
+            yPosition -= 12;
             page.drawText(`Cliente: ${quote.title}`, { x: 50, y: yPosition, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-            yPosition -= 30;
-            page.drawText(`Fecha: ${quote.fecha}`, { x: 50, y: yPosition, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
-            yPosition -= 30; // Ajusta el espacio después de la información
+            yPosition -= 16;
+            page.drawText(`Fecha: ${quote.fecha}`, { x: 50, y: yPosition, size: 11, font: timesRomanFont, color: rgb(0, 0, 0) });
+            yPosition -= 16; // Ajusta el espacio después de la información
         };
         
         drawQuoteInfo();
 
         // Dibujar encabezado de la tabla
         const drawTableHeader = (page, startY) => {
-            const headerY = startY - 9; // Ajustar posición del encabezado
+            const headerY = startY - 11; // Ajustar posición del encabezado
             page.drawText('Item', { x: 50, y: headerY, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
             page.drawText('Producto', { x: 80, y: headerY, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
             page.drawText('Cantidad', { x: 352, y: headerY, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
@@ -109,7 +118,9 @@ const generatePdf = async (quote) => {
         
         // Dibujar encabezado de la tabla y agregar productos
         const headerY = drawTableHeader(page, yPosition);
-        yPosition = headerY - 20; // Espacio después del encabezado para los productos
+        drawLineUnderText(page, 50, yPosition - 15); // Dibuja una línea debajo del texto en (50, yPosition - 3)
+
+        yPosition = headerY - 6; // Espacio después del encabezado para los productos
         yPosition = addProductsToPage(page, quote.items, yPosition);
 
         // Ajustar la posición Y para el texto de la nota
@@ -126,7 +137,7 @@ const generatePdf = async (quote) => {
         });
 
         // Espacio antes del resumen final
-        yPosition -= 40; // Espacio adicional antes de los totales
+        yPosition -= 44; // Espacio adicional antes de los totales
 
         // Calcular y mostrar Neto, IVA y Total
         page.drawText(`Sub Total: $${quote.total_sin_iva}`, { x: 417, y: yPosition, size: 15, font: timesRomanFont, color: rgb(0, 0, 0) });
@@ -136,8 +147,8 @@ const generatePdf = async (quote) => {
         page.drawText(`Total: $${quote.total_con_iva}`, { x: 417, y: yPosition, size: 15, font: timesRomanFont, color: rgb(0, 0, 0) });
 
         // Luego, agrega el texto de validez
-        yPosition -= 20; // Ajusta para separar la nota de la validez
-        page.drawText(`Validez de la cotización: 15 días a partir de la fecha de emisión.`, { x: 50, y: yPosition, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
+        yPosition -= 44; // Ajusta para separar la nota de la validez
+        page.drawText(`Validez de la cotización: 15 días a partir de la fecha de emisión.`, { x: 100, y: yPosition, size: 12, font: timesRomanFont, color: rgb(0, 0, 0) });
 
         // Serializar el PDF
         const pdfBytes = await pdfDoc.save();

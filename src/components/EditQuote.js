@@ -167,8 +167,19 @@ const EditQuote = ({ quoteId, onClose }) => {
 
     // Cálculo de totales en el render
     const totalSinIva = roundNumber(formData.items.reduce((total, item) => {
-        return total + (parseFloat(item.precio_total_sin_iva) || 0);
-    }, 0));
+        const precioTotalSinIva = parseFloat(item.precio_total_sin_iva) || 0;
+        return total + precioTotalSinIva;
+    }, 0)) || 0;
+
+    const totalIva = roundNumber(formData.items.reduce((total, item) => {
+        const ivaTotal = parseFloat(item.iva_total) || 0;
+        return total + ivaTotal;
+    }, 0)) || 0;
+
+    const totalConIva = roundNumber(formData.items.reduce((total, item) => {
+        const totalMasIva = parseFloat(item.total_mas_iva) || 0;
+        return total + totalMasIva;
+    }, 0)) || 0;
 
     return (
         <Modal onClose={onClose}>
@@ -181,6 +192,8 @@ const EditQuote = ({ quoteId, onClose }) => {
                 addNewItem={addNewItem}
                 removeItem={removeItem}
                 totalSinIva={totalSinIva}
+                totalIva={totalIva}
+                totalConIva={totalConIva}              
                 handleSubmit={handleSubmit}
                 message={message}
             />
