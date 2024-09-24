@@ -3,7 +3,7 @@
  * Plugin Name: Cotizador PDF
  * Author: AlekhArt.codes
  * Author URI: https://github.com/VitokoMp
- * Version: 1.2.0
+ * Version: 1.2.1
  * Description: WordPress React pdf cotizacion.
  * Text-Domain: wp-react-pdf-cotizacion 
  */

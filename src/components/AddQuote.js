@@ -51,10 +51,10 @@ const AddQuote = () => {
 
             return { 
                 ...item, 
-                precio_total_sin_iva: precioTotalSinIva.toFixed(2),
-                iva_total: ivaTotal.toFixed(2),
-                total_mas_iva: totalMasIva.toFixed(2),
-                precio: totalMasIva.toFixed(2) // Precio total con IVA
+                precio_total_sin_iva: precioTotalSinIva,
+                iva_total: ivaTotal,
+                total_mas_iva: totalMasIva,
+                precio: totalMasIva // Precio total con IVA
             };
         });
 
@@ -96,17 +96,25 @@ const AddQuote = () => {
         if (!formData.nro_orden) newErrors.nro_orden = 'Nro. de Orden es obligatorio';
         if (!formData.fecha) newErrors.fecha = 'Fecha es obligatoria';
         if (!formData.cliente) newErrors.cliente = 'Cliente es obligatorio';
-        if (formData.items.some(item => !item.producto || !item.cantidad || !item.precio_unitario || !item.precio_total_sin_iva || !item.iva_total || !item.total_mas_iva)) {
-            newErrors.items = 'Todos los campos de los productos son obligatorios';
+        if (formData.items.some(
+            item => !item.producto || 
+            !item.cantidad || 
+            !item.precio_unitario || 
+            !item.precio_total_sin_iva || 
+            !item.iva_total || 
+            !item.total_mas_iva ||
+            parseFloat(item.precio_unitario) < 100) ) {
+            newErrors.items = 'Todos los campos de los productos son obligatorios y minimo de $100 pesos';
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
+    
     const calculateTotals = () => {
-        const totalSinIva = formData.items.reduce((sum, item) => sum + parseFloat(item.precio_total_sin_iva || 0), 0);
-        const totalIva = formData.items.reduce((sum, item) => sum + parseFloat(item.iva_total || 0), 0);
-        const totalConIva = formData.items.reduce((sum, item) => sum + parseFloat(item.total_mas_iva || 0), 0);
+        const totalSinIva = Math.round(formData.items.reduce((sum, item) => sum + parseFloat(item.precio_total_sin_iva || 0), 0));
+        const totalIva = Math.round(formData.items.reduce((sum, item) => sum + parseFloat(item.iva_total || 0), 0));
+        const totalConIva = Math.round(formData.items.reduce((sum, item) => sum + parseFloat(item.total_mas_iva || 0), 0));
 
         return { totalSinIva, totalIva, totalConIva };
     };
@@ -123,9 +131,9 @@ const AddQuote = () => {
         // Creamos un objeto con los datos del formulario, incluyendo los totales calculados
         const quoteData = {
             ...formData,
-            total_sin_iva: totalSinIva.toFixed(2),
-            total_iva: totalIva.toFixed(2),
-            total_con_iva: totalConIva.toFixed(2)
+            total_sin_iva: totalSinIva,
+            total_iva: totalIva,
+            total_con_iva: totalConIva
         };
     
         axios.post(
@@ -298,6 +306,7 @@ const AddQuote = () => {
                                         name="producto"
                                         value={item.producto}
                                         onChange={(e) => handleItemChange(index, e)}
+                                        
                                     />
                                 </div>
                             </div>
@@ -310,6 +319,8 @@ const AddQuote = () => {
                                         name="cantidad"
                                         value={item.cantidad}
                                         onChange={(e) => handleItemChange(index, e)}
+                                        min="0" 
+                                        step="1"
                                     />
                                 </div>
                                 <div className="form-group">
@@ -320,6 +331,8 @@ const AddQuote = () => {
                                         name="precio_unitario"
                                         value={item.precio_unitario}
                                         onChange={(e) => handleItemChange(index, e)}
+                                        min="0" 
+                                        step="1"
                                     />
                                 </div>
                                 <div className="form-group">
@@ -353,9 +366,9 @@ const AddQuote = () => {
                 </div>
 
                 <div className="totals">
-                    <div>Total Sin IVA: {totalSinIva.toFixed(2)}</div>
-                    <div>IVA ({IVA_PERCENTAGE}%): {totalIva.toFixed(2)}</div>
-                    <div>Total con IVA: {totalConIva.toFixed(2)}</div>
+                    <div>Sub Total: {totalSinIva}</div>
+                    <div>IVA ({IVA_PERCENTAGE}%): {totalIva}</div>
+                    <div>Total: {totalConIva}</div>
                 </div>
                  
 

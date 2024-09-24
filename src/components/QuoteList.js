@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import EditQuote from './EditQuote'; // Asegúrate de que la ruta sea correcta
-import generatePdf from './generatePdf';
+import generatePdf from './GeneratePDF';
 import PDFPreview from './PDFPreview'; // Asegúrate de que la ruta sea correcta
 import './QuoteList.css'; // Asegúrate de que la ruta sea correcta
 import { DropQuote } from './DropQuote';
@@ -197,7 +197,7 @@ const QuoteList = () => {
                     <thead>
                         <tr>
                             <th></th>
-                            <th>Título</th>
+                            <th>Cliente</th>
                             <th>Nro. Cotización</th>
                             <th>Nro. Orden</th>
                             <th>Nro. Factura</th>
@@ -235,7 +235,7 @@ const QuoteList = () => {
                                         <option value="Cancelada">Cancelada</option>
                                     </select>
                                 </td>
-                                <td>$ {quote.total_con_iva}</td>
+                                <td>$ {parseInt(quote.total_con_iva, 10).toLocaleString()}</td>
                                 <td>
                                     <a href="#" onClick={() => openModal(quote.id)}>Editar</a> |
                                     <DropQuote id={quote.id} onDelete={handleDelete} /> |
@@ -243,13 +243,13 @@ const QuoteList = () => {
                                 </td>
                             </tr>
                         ))}
-                        {showPreview && (
-                            <PDFPreview pdfUrl={pdfUrl} onClose={handleClosePreview} />
-                        )}
                     </tbody>
                 </table>
+                {showPreview && (
+                    <PDFPreview pdfUrl={pdfUrl} onClose={handleClosePreview} />
+                )}
             </div>
-
+    
             {isModalOpen && (
                 <div className="modal-overlay" onClick={closeModal}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -263,6 +263,7 @@ const QuoteList = () => {
             )}
         </div>
     );
+    
 };
 
 export default QuoteList;

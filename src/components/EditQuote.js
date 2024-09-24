@@ -4,8 +4,7 @@ import Modal from './Modal';
 import './EditQuote.css';
 import Quote from './Quote';
 
-const EditQuote = ({ quoteId, onClose, onSave }) => {
-
+const EditQuote = ({ quoteId, onClose }) => {
     const [formData, setFormData] = useState({
         nro_orden: '',
         nro_de_cotizacion: '',
@@ -26,7 +25,7 @@ const EditQuote = ({ quoteId, onClose, onSave }) => {
 
     const [errors, setErrors] = useState({});
     const [message, setMessage] = useState('');
-    const IVA_PERCENTAGE = 19; // Porcentaje de IVA en Chile (puedes ajustar)
+    const IVA_PERCENTAGE = 19; // Porcentaje de IVA en Chile
 
     useEffect(() => {
         if (quoteId) {
@@ -60,10 +59,9 @@ const EditQuote = ({ quoteId, onClose, onSave }) => {
 
             return { 
                 ...item, 
-                precio_total_sin_iva: precioTotalSinIva.toFixed(2),
-                iva_total: ivaTotal.toFixed(2),
-                total_mas_iva: totalMasIva.toFixed(2),
-                precio: totalMasIva.toFixed(2)
+                precio_total_sin_iva: precioTotalSinIva,
+                iva_total: ivaTotal,
+                total_mas_iva: totalMasIva,
             };
         });
 
@@ -71,17 +69,16 @@ const EditQuote = ({ quoteId, onClose, onSave }) => {
     };
     
     const addNewItem = () => {
-
-    const lastItem = formData.items[formData.items.length - 1];
+        const lastItem = formData.items[formData.items.length - 1];
 
         if (!lastItem.producto || !lastItem.cantidad || !lastItem.precio_unitario) {
             setErrors({
                 ...errors,
-                items: 'Porfavor completa el producto actual antes de agregar uno nuevo'
-        });
-        return;
-    }
-        setErrors({...errors, items:''});
+                items: 'Por favor completa el producto actual antes de agregar uno nuevo'
+            });
+            return;
+        }
+        setErrors({ ...errors, items: '' });
         setFormData({
             ...formData,
             items: [...formData.items, {  
@@ -113,11 +110,16 @@ const EditQuote = ({ quoteId, onClose, onSave }) => {
         if (!formData.nro_orden) newErrors.nro_orden = 'Nro. de Orden es obligatorio';
         if (!formData.fecha) newErrors.fecha = 'Fecha es obligatoria';
         if (!formData.cliente) newErrors.cliente = 'Cliente es obligatorio';
-        if (formData.items.some(item => !item.producto || !item.cantidad || !item.precio_unitario)) {
-            newErrors.items = 'Todos los productos deben tener nombre, cantidad y precio unitario';
+        if (formData.items.some(item => !item.producto || !item.cantidad || !item.precio_unitario || parseFloat(item.precio_unitario) < 100)) {
+            newErrors.items = 'Todos los productos deben tener nombre, cantidad y precio unitario de minimo $100 pesos';
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
+    };
+
+    const roundNumber = (num) => {
+        if (num === 5 || num === 10) return num; // Si es 5 o 10, no lo redondea
+        return Math.round(num); // Redondea al número entero más cercano
     };
 
     const handleSubmit = (e) => {
@@ -125,15 +127,26 @@ const EditQuote = ({ quoteId, onClose, onSave }) => {
         if (!validateForm()) return;
 
         // Calculamos los totales generales
-        const totalSinIva = formData.items.reduce((total, item) => total + parseFloat(item.precio_total_sin_iva || 0), 0);
-        const totalIva = formData.items.reduce((total, item) => total + parseFloat(item.iva_total || 0), 0);
-        const totalConIva = formData.items.reduce((total, item) => total + parseFloat(item.total_mas_iva || 0), 0);
+        const totalSinIva = roundNumber(formData.items.reduce((total, item) => {
+            const precioTotalSinIva = parseFloat(item.precio_total_sin_iva) || 0;
+            return total + precioTotalSinIva;
+        }, 0)) || 0;
+
+        const totalIva = roundNumber(formData.items.reduce((total, item) => {
+            const ivaTotal = parseFloat(item.iva_total) || 0;
+            return total + ivaTotal;
+        }, 0)) || 0;
+
+        const totalConIva = roundNumber(formData.items.reduce((total, item) => {
+            const totalMasIva = parseFloat(item.total_mas_iva) || 0;
+            return total + totalMasIva;
+        }, 0)) || 0;
 
         const updatedQuote = {
             ...formData,
-            total_sin_iva: totalSinIva.toFixed(2),
-            total_iva: totalIva.toFixed(2),
-            total_con_iva: totalConIva.toFixed(2)
+            total_sin_iva: totalSinIva,
+            total_iva: totalIva,
+            total_con_iva: totalConIva
         };
 
         axios.post(`${appLocalizer.apiUrl}/update-quote/${quoteId}`, updatedQuote, {
@@ -142,14 +155,20 @@ const EditQuote = ({ quoteId, onClose, onSave }) => {
                 'X-WP-NONCE': appLocalizer.nonce
             }
         })
-        .then(()=>{
+        .then(() => {
             setMessage('Cotización actualizada con éxito');
+            
         })
         .catch((error) => {
             console.error('Error al actualizar cotización:', error);
             setMessage('Error al actualizar cotización');
         }); 
     };
+
+    // Cálculo de totales en el render
+    const totalSinIva = roundNumber(formData.items.reduce((total, item) => {
+        return total + (parseFloat(item.precio_total_sin_iva) || 0);
+    }, 0));
 
     return (
         <Modal onClose={onClose}>
@@ -161,10 +180,7 @@ const EditQuote = ({ quoteId, onClose, onSave }) => {
                 handleItemChange={handleItemChange}
                 addNewItem={addNewItem}
                 removeItem={removeItem}
-                totalSinIva={formData.items.reduce((total, item) => total + parseFloat(item.precio_total_sin_iva || 0), 0)}
-                totalIva={formData.items.reduce((total, item) => total + parseFloat(item.iva_total || 0), 0)}
-                totalConIva={formData.items.reduce((total, item) => total + parseFloat(item.total_mas_iva || 0), 0)}
-                IVA_PERCENTAGE={IVA_PERCENTAGE}
+                totalSinIva={totalSinIva}
                 handleSubmit={handleSubmit}
                 message={message}
             />

@@ -10,7 +10,6 @@ const Quote = ({
   totalSinIva,
   totalIva,
   totalConIva,
-  IVA_PERCENTAGE,
   handleSubmit,
   message,
 }) => {
@@ -123,24 +122,11 @@ const Quote = ({
             <input
               type="text"
               name="precio_total_sin_iva"
-              placeholder="Total sin IVA"
+              placeholder="Precio total Neto"
               value={item.precio_total_sin_iva}
               readOnly
             />
-            <input
-              type="text"
-              name="iva_total"
-              placeholder="IVA Total"
-              value={item.iva_total}
-              readOnly
-            />
-            <input
-              type="text"
-              name="total_mas_iva"
-              placeholder="Total con IVA"
-              value={item.total_mas_iva}
-              readOnly
-            />
+            
             <button type="button" onClick={() => removeItem(index)}>Eliminar</button>
           </div>
         ))}
@@ -149,9 +135,9 @@ const Quote = ({
       </div>
 
       <div className="totals">
-        <div>Total sin IVA: {totalSinIva.toFixed(2)}</div>
-        <div>Total IVA: {totalIva.toFixed(2)}</div>
-        <div>Total con IVA: {totalConIva.toFixed(2)}</div>
+        <div>Sub Total: {totalSinIva}</div>
+        <div>IVA: {totalIva}</div>
+        <div>Total: {totalConIva}</div>
       </div>
 
       <div className="form-group">
